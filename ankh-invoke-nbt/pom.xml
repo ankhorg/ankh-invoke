@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.inksnow</groupId>
+    <artifactId>ankh-invoke-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>ankh-invoke-nbt</artifactId>
+
+  <properties>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>maven-central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>spigotmc-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+
+
+  <build>
+    <plugins>
+      <!-- maven source plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- maven shade plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createSourcesJar>true</createSourcesJar>
+              <shadeSourcesContent>true</shadeSourcesContent>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+              <relocations>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>org.inksnow.ankhinvoke.libs.asm</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>bot.inker.acj</pattern>
+                  <shadedPattern>org.inksnow.ankhinvoke.libs.acj</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- ankh-invoke-maven-plugin -->
+      <plugin>
+        <groupId>org.inksnow</groupId>
+        <artifactId>ankh-invoke-maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build-mappings</goal>
+              <goal>apply-transformer</goal>
+            </goals>
+            <configuration>
+              <ankhInvokePackage>org.inksnow.ankhinvoke</ankhInvokePackage>
+              <mappings>
+                <mapping>
+                  <registry>ankh-invoke-nbt</registry>
+                  <mapSet>mojang</mapSet>
+                  <name>mojang-1.20.2</name>
+                  <minecraftVersion>1.20.2</minecraftVersion>
+                  <predicates>
+                    <predicate>craftbukkit_version:{v1_20_R2}</predicate>
+                  </predicates>
+                </mapping>
+                <mapping>
+                  <registry>ankh-invoke-nbt</registry>
+                  <mapSet>mojang</mapSet>
+                  <name>mojang-1.19.4</name>
+                  <minecraftVersion>1.19.4</minecraftVersion>
+                  <predicates>
+                    <predicate>craftbukkit_version:{v1_19_R3}</predicate>
+                  </predicates>
+                </mapping>
+                <mapping>
+                  <registry>ankh-invoke-nbt</registry>
+                  <mapSet>mojang</mapSet>
+                  <name>mojang-1.18.2</name>
+                  <minecraftVersion>1.18.2</minecraftVersion>
+                  <predicates>
+                    <predicate>craftbukkit_version:{v1_18_R2}</predicate>
+                  </predicates>
+                </mapping>
+                <mapping>
+                  <registry>ankh-invoke-nbt</registry>
+                  <mapSet>mojang</mapSet>
+                  <name>mojang-1.17.1</name>
+                  <minecraftVersion>1.17.1</minecraftVersion>
+                  <predicates>
+                    <predicate>craftbukkit_version:{v1_17_R1}</predicate>
+                  </predicates>
+                </mapping>
+              </mappings>
+              <referencePackages>
+                <referencePackage>org.inksnow.ankhinvoke.nbt.ref</referencePackage>
+              </referencePackages>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.inksnow</groupId>
+      <artifactId>ankh-invoke-bukkit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- provided -->
+    <!-- bukkit -->
+    <dependency>
+      <groupId>org.bukkit</groupId>
+      <artifactId>bukkit</artifactId>
+      <version>1.8-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- jetbrains annotations -->
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>24.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

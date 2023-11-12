@@ -1,0 +1,7 @@
+# ankh-invoke-bukkit start
+org.inksnow.ankhinvoke.bukkit.predicate.BukkitVersionPredicate$Factory
+org.inksnow.ankhinvoke.bukkit.predicate.CraftBukkitVersionPredicateMachine$Factory
+org.inksnow.ankhinvoke.bukkit.predicate.IsFoliaPredicateMachine$Factory
+org.inksnow.ankhinvoke.bukkit.predicate.IsPaperPredicateMachine$Factory
+org.inksnow.ankhinvoke.bukkit.predicate.IsSpigotPredicateMachine$Factory
+# ankh-invoke-bukkit end

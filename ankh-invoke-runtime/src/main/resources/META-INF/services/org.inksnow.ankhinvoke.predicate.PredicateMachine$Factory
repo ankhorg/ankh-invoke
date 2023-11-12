@@ -1,0 +1,6 @@
+# ankh-invoke start
+org.inksnow.ankhinvoke.predicate.TrueMachine$Factory
+org.inksnow.ankhinvoke.predicate.FalseMachine$Factory
+org.inksnow.ankhinvoke.predicate.NotMachine$Factory
+org.inksnow.ankhinvoke.predicate.JavaVersionMachine$Factory
+# ankh-invoke end
