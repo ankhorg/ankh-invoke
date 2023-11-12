@@ -55,9 +55,9 @@
 
   <distributionManagement>
     <repository>
-      <id>${repo.id}</id>
-      <name>${repo.id} repository</name>
-      <url>${repo.url}</url>
+      <id>${env.REPOSITORY_ID}</id>
+      <name>${env.REPOSITORY_ID} repository</name>
+      <url>${env.REPOSITORY_URL}</url>
     </repository>
   </distributionManagement>
 
