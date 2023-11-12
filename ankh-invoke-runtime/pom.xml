@@ -38,6 +38,14 @@
     </plugins>
   </build>
 
+  <distributionManagement>
+    <repository>
+      <id>${repo.id}</id>
+      <name>${repo.id} repository</name>
+      <url>${repo.url}</url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <!-- project dependencies -->
     <dependency>

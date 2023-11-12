@@ -24,4 +24,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <distributionManagement>
+    <repository>
+      <id>${repo.id}</id>
+      <name>${repo.id} repository</name>
+      <url>${repo.url}</url>
+    </repository>
+  </distributionManagement>
+
 </project>

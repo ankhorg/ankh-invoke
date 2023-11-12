@@ -59,6 +59,7 @@
             <configuration>
               <createSourcesJar>true</createSourcesJar>
               <shadeSourcesContent>true</shadeSourcesContent>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
               </transformers>
@@ -136,6 +137,14 @@
       </plugin>
     </plugins>
   </build>
+
+  <distributionManagement>
+    <repository>
+      <id>${repo.id}</id>
+      <name>${repo.id} repository</name>
+      <url>${repo.url}</url>
+    </repository>
+  </distributionManagement>
 
   <dependencies>
     <dependency>
