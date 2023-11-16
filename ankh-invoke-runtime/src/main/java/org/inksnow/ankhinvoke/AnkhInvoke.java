@@ -8,9 +8,8 @@ import org.inksnow.ankhinvoke.util.DstUnsafe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.tree.ClassNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,19 +154,18 @@ public final class AnkhInvoke {
   }
 
   private byte @NotNull [] processClassImpl(byte @NotNull [] inputBytes, boolean scannedInner) {
-    ClassWriter cw = new PooledClassWriter(classPoolService, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-    ClassVisitor cv = cw;
+    ClassNode classNode = new ClassNode();
+    ClassReader classReader = new ClassReader(inputBytes);
+    classReader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
-    cv = new AddProcessedAnnotationClassVisitor(cv);
-    cv = new ClassRemapper(cv, globalRemapService);
-    cv = new ApplyClassClassVisitor(referenceService, predicateService, referenceRemapService, cv);
-    if(scannedInner) {
-      cv = new ScannerInnerClassVisitor(injectInnerClassMethod, cv);
-    }
+    classNode = new ApplyReferenceProcessor(referenceService, predicateService, referenceRemapService).process(classNode);
+    classNode = new ClassRemapperProcess(globalRemapService).process(classNode);
+    classNode = new AddProcessedAnnotationProcessor().process(classNode);
+    classNode = new ScannerInnerProcessor(injectInnerClassMethod).process(classNode);
 
-    ClassReader cr = new ClassReader(inputBytes);
-    cr.accept(cv, 0);
-    return cw.toByteArray();
+    ClassWriter classWriter = new PooledClassWriter(classPoolService, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+    classNode.accept(classWriter);
+    return classWriter.toByteArray();
   }
 
   public byte @Nullable [] processClass(@InternalName @NotNull String className) {
