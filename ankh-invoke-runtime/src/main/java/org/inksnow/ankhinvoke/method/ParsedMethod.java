@@ -57,13 +57,17 @@ public class ParsedMethod {
   }
 
   public static ParsedMethod parse(@NotNull String reference) {
-    int firstSplitIndex = reference.indexOf(';');
-    int secondSplitIndex = reference.indexOf('(', firstSplitIndex);
-    return new ParsedMethod(
-        Type.getObjectType(reference.substring(1, firstSplitIndex)),
-        reference.substring(firstSplitIndex + 1, secondSplitIndex),
-        Type.getMethodType(reference.substring(secondSplitIndex))
-    );
+    try {
+      int firstSplitIndex = reference.indexOf(';');
+      int secondSplitIndex = reference.indexOf('(', firstSplitIndex);
+      return new ParsedMethod(
+          Type.getObjectType(reference.substring(1, firstSplitIndex)),
+          reference.substring(firstSplitIndex + 1, secondSplitIndex),
+          Type.getMethodType(reference.substring(secondSplitIndex))
+      );
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Failed to parse reference '" + reference + "'", e);
+    }
   }
 
   public final @NotNull Type owner() {

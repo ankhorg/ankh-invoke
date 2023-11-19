@@ -84,6 +84,11 @@ public final class AnkhInvoke {
       }
     }
 
+    if (!referenceService.get(className).isEmpty()) {
+      processedClass.put(className, NOT_PROCESS_OBJECT);
+      return;
+    }
+
     ClassPoolNode classPoolNode = classPoolService.get(className);
     if (classPoolNode != null) {
       if (classPoolNode.superClass() != null) {
@@ -158,6 +163,7 @@ public final class AnkhInvoke {
     ClassReader classReader = new ClassReader(inputBytes);
     classReader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
+    classNode = new ApplyOverrideProcessor(referenceService, predicateService, referenceRemapService, classPoolService).process(classNode);
     classNode = new ApplyReferenceProcessor(referenceService, predicateService, referenceRemapService).process(classNode);
     classNode = new ClassRemapperProcess(globalRemapService).process(classNode);
     classNode = new AddProcessedAnnotationProcessor().process(classNode);

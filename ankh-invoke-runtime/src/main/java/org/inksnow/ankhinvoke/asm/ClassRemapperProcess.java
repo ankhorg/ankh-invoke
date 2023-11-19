@@ -5,12 +5,13 @@ import org.inksnow.ankhinvoke.comments.InternalName;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
+import org.objectweb.asm.commons.AnnotationRemapper;
 import org.objectweb.asm.commons.ModuleHashesAttribute;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.*;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,17 +187,17 @@ public class ClassRemapperProcess implements ClassNodeProcessor {
   }
 
   protected Object remapAnnotationValue(Object value) {
-    if(value instanceof List) {
-      if(!IGNORE_NOT_FULL_SUPPORT) {
-        logger.debug("remap annotation value with list value is not full support. use {} to disable this message", IGNORE_NOT_FULL_SUPPORT_KEY);
-      }
-      return value;
-    } else if(value instanceof String[]) {
-      String[] arrayValue = (String[]) value;
-      return remapper.mapValue(new String[]{ remapper.mapDesc(arrayValue[0]), arrayValue[1] });
-    } else {
-      return remapper.mapValue(value);
-    }
+    // TODO: stupid code, fix it later
+    AnnotationNode demoNode = new AnnotationNode("L;");
+    demoNode.values = new ArrayList<>();
+    demoNode.values.add("L;");
+    demoNode.values.add(value);
+
+    AnnotationNode resultNode = new AnnotationNode("L;");
+    AnnotationVisitor visitor = new AnnotationRemapper("L;", resultNode, remapper);
+    demoNode.accept(visitor);
+
+    return resultNode.values.get(1);
   }
 
   // === process attribute ==========================================

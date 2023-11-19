@@ -70,6 +70,14 @@ public final class ReferenceMetadata {
     return methodMap.get(key);
   }
 
+  public @NotNull Map<@NotNull String, @NotNull Entry> fieldMap() {
+    return fieldMap;
+  }
+
+  public @NotNull Map<@NotNull String, @NotNull Entry> methodMap() {
+    return methodMap;
+  }
+
   public boolean isEmpty() {
     return handles.isEmpty() && fieldMap.isEmpty() && methodMap.isEmpty();
   }

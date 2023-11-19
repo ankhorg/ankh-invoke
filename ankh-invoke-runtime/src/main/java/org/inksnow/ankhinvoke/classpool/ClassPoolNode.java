@@ -108,7 +108,7 @@ public final class ClassPoolNode {
       return this;
     }
 
-    public @NotNull Builder superClass(@InternalName @NotNull String superClass) {
+    public @NotNull Builder superClass(@InternalName @Nullable String superClass) {
       this.superClass = superClass;
       return this;
     }

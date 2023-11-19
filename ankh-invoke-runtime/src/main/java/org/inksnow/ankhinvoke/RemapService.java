@@ -4,12 +4,16 @@ import org.inksnow.ankhinvoke.asm.BlobRemapper;
 import org.inksnow.ankhinvoke.codec.MappingRegistry;
 import org.inksnow.ankhinvoke.comments.InternalName;
 import org.inksnow.ankhinvoke.util.DstUnsafe;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.objectweb.asm.commons.Remapper;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +37,8 @@ public final class RemapService extends Remapper {
   }
 
   @Override
-  public @InternalName @NotNull String mapType(@InternalName @NotNull String rawInternalName) {
+  @Contract("null -> null; !null -> !null")
+  public @InternalName String mapType(@InternalName String rawInternalName) {
     String internalName = rawInternalName;
     for (Remapper remapper : remapperList) {
       internalName = remapper.mapType(internalName);
@@ -69,7 +74,8 @@ public final class RemapService extends Remapper {
   }
 
   @Override
-  public @NotNull String mapSignature(@NotNull String rawSignature, boolean typeSignature) {
+  @Contract("null -> null; !null -> !null")
+  public String mapSignature(String rawSignature, boolean typeSignature) {
     String signature = rawSignature;
     for (Remapper remapper : remapperList) {
       signature = remapper.mapSignature(signature, typeSignature);
