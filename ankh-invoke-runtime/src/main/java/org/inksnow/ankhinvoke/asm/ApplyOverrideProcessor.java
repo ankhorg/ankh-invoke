@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 public class ApplyOverrideProcessor implements ClassNodeProcessor {
   private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
-  private static final @NotNull Function<@NotNull String, @NotNull List<MethodNode>> METHOD_NODE_LIST_FUNCTION = it->new ArrayList<>();
+  private static final @NotNull Function<@NotNull String, @NotNull List<@NotNull MethodNode>> METHOD_NODE_LIST_FUNCTION = it->new ArrayList<>();
   private final @NotNull ReferenceService referenceService;
   private final @NotNull PredicateService predicateService;
   private final @NotNull RemapService referenceRemapService;
