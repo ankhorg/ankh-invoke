@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public final class ClassPoolService {
   private static final String OBJECT_INTERNAL_NAME = "java/lang/Object";
-  private final @NotNull Map<@InternalName @NotNull String, @NotNull ClassPoolNode> classPoolNodeMap = new HashMap<>();
+  private final @NotNull Map<@InternalName @NotNull String, @NotNull ClassPoolNode> classPoolNodeMap = new ConcurrentSkipListMap<>();
   private final @NotNull @Unmodifiable List<@NotNull ClassPoolLoader> poolLoaderList;
   private final @NotNull Function<@InternalName @NotNull String, @Nullable ClassPoolNode> loadFunction = this::load;
 

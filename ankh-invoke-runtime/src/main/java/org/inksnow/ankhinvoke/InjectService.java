@@ -1,13 +1,11 @@
 package org.inksnow.ankhinvoke;
 
 import org.inksnow.ankhinvoke.comments.InternalName;
-import org.inksnow.ankhinvoke.injector.ClassInjector;
-import org.inksnow.ankhinvoke.injector.ClassLoaderProvider;
-import org.inksnow.ankhinvoke.injector.ClassProvider;
-import org.inksnow.ankhinvoke.injector.UnsafeClassInjector;
+import org.inksnow.ankhinvoke.injector.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 
 public final class InjectService {
@@ -27,6 +25,14 @@ public final class InjectService {
     return provider.provide(name);
   }
 
+  public @NotNull ClassInjector getInjector() {
+    return injector;
+  }
+
+  public @NotNull ClassProvider getProvider() {
+    return provider;
+  }
+
   public static final class Builder {
     private final AnkhInvoke.@NotNull Builder ankhInvokeBuilder;
     private @Nullable ClassInjector injector;
@@ -38,6 +44,11 @@ public final class InjectService {
 
     public @NotNull Builder unsafeInjector(@NotNull ClassLoader classLoader) {
       this.injector = new UnsafeClassInjector(classLoader);
+      return this;
+    }
+
+    public @NotNull Builder urlInjector(@NotNull URLClassLoader urlClassLoader) {
+      this.injector = new UrlTransformInjector(urlClassLoader);
       return this;
     }
 

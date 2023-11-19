@@ -7,7 +7,6 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,7 +22,11 @@ public class AddProcessedAnnotationClassVisitor extends ClassVisitor {
     super.visit(version, access, name, signature, superName, interfaces);
     AnnotationVisitor av = cv.visitAnnotation("L" + AnkhInvokeMapping.ANKH_INVOKE_PACKAGE.replace('.', '/') + "/comments/AnkhInvokeProcessed;", false);
     av.visit("time", TimeUtil.logTime());
-    av.visit("by", new ArrayList<>(by));
+    AnnotationVisitor arrayVisitor = av.visitArray("by");
+    for (String byLine : by) {
+      arrayVisitor.visit(null, byLine);
+    }
+    arrayVisitor.visitEnd();
     av.visitEnd();
   }
 }

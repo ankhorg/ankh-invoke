@@ -86,7 +86,7 @@
           <execution>
             <goals>
               <goal>build-mappings</goal>
-              <goal>apply-transformer</goal>
+              <goal>apply-reference-jar</goal>
             </goals>
             <configuration>
               <ankhInvokePackage>org.inksnow.ankhinvoke</ankhInvokePackage>

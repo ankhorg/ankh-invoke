@@ -4,6 +4,7 @@ import org.inksnow.ankhinvoke.asm.*;
 import org.inksnow.ankhinvoke.classpool.ClassPoolNode;
 import org.inksnow.ankhinvoke.comments.InternalName;
 import org.inksnow.ankhinvoke.comments.NormalName;
+import org.inksnow.ankhinvoke.injector.TransformInjector;
 import org.inksnow.ankhinvoke.util.DstUnsafe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +57,10 @@ public final class AnkhInvoke {
     this.predicateService = predicateService;
     this.globalRemapService = globalRemapService;
     this.referenceRemapService = referenceRemapService;
+
+    if (injectService.getInjector() instanceof TransformInjector) {
+      ((TransformInjector) injectService.getInjector()).registerHandle(this);
+    }
   }
 
   public static @NotNull Builder builder() {

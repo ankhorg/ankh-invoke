@@ -4,24 +4,25 @@ import org.inksnow.ankhinvoke.classpool.ClassLoaderPoolLoader;
 import org.inksnow.ankhinvoke.classpool.LoadedClassPoolLoader;
 import org.inksnow.ankhinvoke.classpool.ResourcePoolLoader;
 import org.inksnow.ankhinvoke.reference.ResourceReferenceSource;
-import org.slf4j.impl.SimpleLoggerConfiguration;
+
+import java.net.URLClassLoader;
 
 public class TestMain {
   static {
-    ClassLoader pluginClassLoader = TestMain.class.getClassLoader();
+    URLClassLoader urlClassLoader = (URLClassLoader) TestMain.class.getClassLoader();
     AnkhInvoke ankhInvoke = AnkhInvoke.builder()
         .reference()
         /**/.appendPackage("org.inksnow.ankhinvoke.ref")
-        /**/.appendSource(new ResourceReferenceSource(pluginClassLoader))
+        /**/.appendSource(new ResourceReferenceSource(urlClassLoader))
         /**/.build()
         .inject()
-        /**/.unsafeInjector(pluginClassLoader)
-        /**/.classLoaderProvider(pluginClassLoader)
+        /**/.urlInjector(urlClassLoader)
+        /**/.classLoaderProvider(urlClassLoader)
         /**/.build()
         .classPool()
-        /**/.appendLoader(new LoadedClassPoolLoader(pluginClassLoader))
-        /**/.appendLoader(new ResourcePoolLoader(pluginClassLoader))
-        /**/.appendLoader(new ClassLoaderPoolLoader(pluginClassLoader))
+        /**/.appendLoader(new LoadedClassPoolLoader(urlClassLoader))
+        /**/.appendLoader(new ResourcePoolLoader(urlClassLoader))
+        /**/.appendLoader(new ClassLoaderPoolLoader(urlClassLoader))
         /**/.build()
         .build();
     ankhInvoke.get("org.inksnow.ankhinvoke.TheMain");

@@ -1,19 +1,15 @@
 package org.inksnow.ankhinvoke.injector;
 
 import bot.inker.acj.JvmHacker;
-import org.inksnow.ankhinvoke.comments.InternalName;
 import org.inksnow.ankhinvoke.util.DstUnsafe;
-import org.inksnow.ankhinvoke.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.net.URL;
 
-public class ClassLoaderProvider implements ClassProvider {
+public class ClassLoaderProvider implements UrlClassProvider {
   private static final @NotNull MethodHandle FIND_RESOURCE_HANDLE = findFindResourceHandle();
   private final @NotNull MethodHandle classLoaderFindResourceHandle;
 
@@ -38,18 +34,11 @@ public class ClassLoaderProvider implements ClassProvider {
   }
 
   @Override
-  public byte @Nullable [] provide(@InternalName @NotNull String name) {
+  public @Nullable URL provideUrl(@NotNull String name) {
     URL url = classLoaderFindResource(name + ".class");
     if (url == null) {
       url = classLoaderFindResource(name + ".ankh-invoke.class");
     }
-    if (url == null) {
-      return null;
-    }
-    try (InputStream in = url.openStream()) {
-      return IOUtils.readAllBytes(in);
-    } catch (IOException e) {
-      throw DstUnsafe.throwImpl(e);
-    }
+    return url;
   }
 }

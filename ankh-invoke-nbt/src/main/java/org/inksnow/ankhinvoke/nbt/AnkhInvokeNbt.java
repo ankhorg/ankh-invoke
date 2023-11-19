@@ -5,6 +5,8 @@ import org.inksnow.ankhinvoke.AnkhInvoke;
 import org.inksnow.ankhinvoke.bukkit.AnkhInvokeBukkit;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URLClassLoader;
+
 public class AnkhInvokeNbt extends JavaPlugin {
   public static final @NotNull String ANKH_INVOKE_NBT_PACKAGE = new String("org.inksnow.ankhinvoke.nbt");
   private static final AnkhInvoke ankhInvoke;
@@ -16,6 +18,9 @@ public class AnkhInvokeNbt extends JavaPlugin {
     }
 
     ankhInvoke = AnkhInvokeBukkit.forBukkit(AnkhInvokeNbt.class)
+        .inject()
+        /**/.urlInjector((URLClassLoader) AnkhInvokeNbt.class.getClassLoader())
+        /**/.build()
         .reference()
         /**/.appendPackage(ANKH_INVOKE_NBT_PACKAGE + ".ref")
         /**/.build()

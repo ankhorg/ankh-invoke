@@ -10,10 +10,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.inksnow.ankhinvoke.map.BlobReferenceGenerator;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
-@Mojo(name = "apply-transformer", defaultPhase = LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name = "apply-reference-classes", defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class ProcessingReferenceMojo extends AbstractMojo {
   private static final @NotNull String DEFAULT_ANKH_INVOKE_PACKAGE = "org.inksnow.ankhinvoke";
   @Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
