@@ -52,6 +52,11 @@ public final class InjectService {
       return this;
     }
 
+    public @NotNull Builder instrumentationInjector(@NotNull ClassLoader classLoader, @NotNull String @NotNull ... applyPrefixes) {
+      this.injector = new InstrumentationTransformInjector(classLoader, applyPrefixes);
+      return this;
+    }
+
     public @NotNull Builder classLoaderProvider(@NotNull ClassLoader classLoader) {
       this.provider = new ClassLoaderProvider(classLoader);
       return this;

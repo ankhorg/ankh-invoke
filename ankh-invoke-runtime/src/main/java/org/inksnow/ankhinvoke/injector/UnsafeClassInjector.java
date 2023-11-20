@@ -9,14 +9,14 @@ import org.jetbrains.annotations.Nullable;
 import java.security.ProtectionDomain;
 
 public class UnsafeClassInjector implements ClassInjector {
-  private final @NotNull ClassLoader classLoader;
+  protected final @NotNull ClassLoader classLoader;
   private volatile boolean spyInjected;
 
   public UnsafeClassInjector(@NotNull ClassLoader classLoader) {
     this.classLoader = classLoader;
   }
 
-  private void ensureSpyInjected() {
+  protected void ensureSpyInjected() {
     if (!spyInjected) {
       synchronized (this) {
         if (!spyInjected) {
