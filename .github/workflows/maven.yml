@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -31,7 +31,7 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: Build with gradle
-        run: ./ankh-invoke-gradle-plugin/gradlew build
+        run: ./gradlew build
         working-directory: ankh-invoke-gradle-plugin
 
       - name: Publish to irepo with maven
@@ -43,7 +43,8 @@ jobs:
           REPOSITORY_PASSWORD: ${{secrets.IREPO_PASSWORD}}
 
       - name: Publish to irepo with gradle
-        run: ./ankh-invoke-gradle-plugin/gradlew publish
+        run: ./gradlew publish
+        working-directory: ankh-invoke-gradle-plugin
         env:
           REPOSITORY_ID: irepo
           REPOSITORY_URL: https://s0.blobs.inksnow.org/maven/
