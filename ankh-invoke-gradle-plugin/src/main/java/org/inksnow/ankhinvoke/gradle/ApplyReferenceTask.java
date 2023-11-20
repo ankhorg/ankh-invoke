@@ -85,7 +85,7 @@ public class ApplyReferenceTask extends DefaultTask {
     File tempJar = new File(cacheDirectory, "tmp.jar");
     tempJar.getParentFile().mkdirs();
     try {
-      generator.execute(new ArrayList<>(getInputJars().getFiles()), tempJar);
+      generator.execute(new ArrayList<File>(getInputJars().getFiles()), tempJar);
       Files.copy(tempJar, getOutputJar());
     } finally {
       if (tempJar.exists()) {
