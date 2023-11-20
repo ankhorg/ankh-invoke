@@ -24,6 +24,18 @@ public class ApplyReferenceTask extends DefaultTask {
   private @Nullable FileCollection inputJars;
   private @Nullable File outputJar;
 
+  public ApplyReferenceTask() {
+    doLast(it-> {
+      try {
+        this.execute();
+      } catch (RuntimeException | Error e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Input
   public @NotNull String getAnkhInvokePackage() {
     return ankhInvokePackage;
