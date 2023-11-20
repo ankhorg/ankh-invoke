@@ -33,7 +33,7 @@ public class ApplyReferenceProcessor extends ClassRemapperProcess {
     ReferenceMetadata metadata = referenceService.get(methodInsn.owner);
     ReferenceMetadata.Entry entry = metadata.method(methodInsn.name + methodInsn.desc);
     if(entry == null) {
-      if (metadata.isEmpty()) {
+      if (true || metadata.isEmpty()) {
         super.processMethodInsn(insnList, methodInsn);
       } else {
         insnList.insertBefore(methodInsn, AsmUtil.createException("java/lang/UnsupportedOperationException", "owner '" + methodInsn.owner + "' mapped but method '" + methodInsn.name + methodInsn.desc + "' not found"));
@@ -62,7 +62,7 @@ public class ApplyReferenceProcessor extends ClassRemapperProcess {
     ReferenceMetadata metadata = referenceService.get(fieldInsn.owner);
     ReferenceMetadata.Entry entry = metadata.field(fieldInsn.name + ":" + fieldInsn.desc);
     if(entry == null) {
-      if (metadata.isEmpty()) {
+      if (true || metadata.isEmpty()) {
         super.processFieldInsn(insnList, fieldInsn);
       } else {
         insnList.insertBefore(fieldInsn, AsmUtil.createException("java/lang/UnsupportedOperationException", "owner '" + fieldInsn.owner + "' mapped but field '" + fieldInsn.name + ":" + fieldInsn.desc + "' not found"));
