@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -20,18 +21,31 @@ public class JarReferenceGenerator {
     this.blobReferenceGenerator = blobReferenceGenerator;
   }
 
-  public void execute(File inputFile, File outputFile) throws IOException {
+  public void execute(List<File> inputFiles, File outputFile) throws IOException {
     // accept scan
-    try(JarInputStream jarIn = new JarInputStream(new FileInputStream(inputFile))) {
-      JarEntry entry;
-      while ((entry = jarIn.getNextJarEntry()) != null) {
-        blobReferenceGenerator.acceptScan(entry.getName(), jarIn);
+    for (File inputFile : inputFiles) {
+      try(JarInputStream jarIn = new JarInputStream(new FileInputStream(inputFile))) {
+        JarEntry entry;
+        while ((entry = jarIn.getNextJarEntry()) != null) {
+          blobReferenceGenerator.acceptScan(entry.getName(), jarIn);
+        }
       }
     }
 
-    try(JarInputStream jarIn = new JarInputStream(new FileInputStream(inputFile))) {
-      try(JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(outputFile))) {
-        handle(jarIn, jarOut);
+    try(JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(outputFile))) {
+      for (File inputFile : inputFiles) {
+        try (JarInputStream jarIn = new JarInputStream(new FileInputStream(inputFile))) {
+          handle(jarIn, jarOut);
+        }
+      }
+
+      for (BlobReferenceGenerator.ProcessAction processAction : blobReferenceGenerator.collect()) {
+        if(processAction.isKeep() && processAction.shouldRename() && processAction.shouldReplace()) {
+          jarOut.putNextEntry(new JarEntry(processAction.getNewName()));
+          jarOut.write(processAction.getBytes());
+        } else if (processAction.isRemove() && processAction.shouldRename()){
+          logger.warn("jar generator not support remove in collect scope", new UnsupportedOperationException());
+        }
       }
     }
   }
@@ -49,15 +63,6 @@ public class JarReferenceGenerator {
       } else if (processAction.isKeep()) {
         jarOut.putNextEntry(copyEntry(entry, processAction.shouldRename() ? processAction.getNewName() : null));
         jarOut.write(processAction.shouldReplace() ? processAction.getBytes() : bytes);
-      }
-    }
-
-    for (BlobReferenceGenerator.ProcessAction processAction : blobReferenceGenerator.collect()) {
-      if(processAction.isKeep() && processAction.shouldRename() && processAction.shouldReplace()) {
-        jarOut.putNextEntry(new JarEntry(processAction.getNewName()));
-        jarOut.write(processAction.getBytes());
-      } else if (processAction.isRemove() && processAction.shouldRename()){
-        logger.warn("jar generator not support remove in collect scope", new UnsupportedOperationException());
       }
     }
   }

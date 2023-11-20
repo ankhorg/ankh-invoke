@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 @Mojo(name = "apply-reference-jar", defaultPhase = LifecyclePhase.PACKAGE)
@@ -46,7 +47,7 @@ public class ProcessingJareMojo extends AbstractMojo {
     File tempJar = new File(cacheDirectory, "tmp.jar");
     tempJar.getParentFile().mkdirs();
     try {
-      generator.execute(processJar, tempJar);
+      generator.execute(Collections.singletonList(processJar), tempJar);
       Files.copy(tempJar, processJar);
     } catch (IOException e) {
       throw new MojoFailureException(e);

@@ -27,8 +27,6 @@ public class AnkhInvokeNbt extends JavaPlugin {
         /**/.build()
         .build();
 
-
-    /*
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtFloat");
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtShort");
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtBukkitItemComponent");
@@ -49,7 +47,7 @@ public class AnkhInvokeNbt extends JavaPlugin {
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtByteArray");
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtLong");
     ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtType");
-    ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtUtils"); */
+    ankhInvoke.get(ANKH_INVOKE_NBT_PACKAGE + ".NbtUtils");
   }
 
   @Override
