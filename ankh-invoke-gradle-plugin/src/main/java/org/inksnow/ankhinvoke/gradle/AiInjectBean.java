@@ -1,9 +1,10 @@
 package org.inksnow.ankhinvoke.gradle;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class AiInjectBean {
+public class AiInjectBean implements Serializable {
   private String registry;
   private String mapSet;
   private String name;

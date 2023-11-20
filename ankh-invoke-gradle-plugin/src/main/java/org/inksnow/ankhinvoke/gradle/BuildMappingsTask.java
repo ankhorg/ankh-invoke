@@ -3,7 +3,6 @@ package org.inksnow.ankhinvoke.gradle;
 import com.google.common.io.Files;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Task;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectory;
 import org.inksnow.ankhinvoke.codec.MappingRegistry;
