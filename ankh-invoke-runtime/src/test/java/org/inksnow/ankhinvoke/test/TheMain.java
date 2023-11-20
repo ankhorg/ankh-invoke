@@ -1,4 +1,4 @@
-package org.inksnow.ankhinvoke;
+package org.inksnow.ankhinvoke.test;
 
 import org.inksnow.ankhinvoke.ref.RefTarget;
 
