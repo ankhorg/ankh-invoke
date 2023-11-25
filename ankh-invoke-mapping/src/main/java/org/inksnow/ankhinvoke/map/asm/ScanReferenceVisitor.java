@@ -46,6 +46,9 @@ public class ScanReferenceVisitor {
         return false;
       }
       BlobReference blobReference = blobReferenceMap.get(owner);
+      if(blobReference == null) {
+        return false;
+      }
       if (!blobReference.isEmpty()) {
         return true;
       }
