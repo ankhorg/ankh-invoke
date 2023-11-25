@@ -85,7 +85,7 @@ public class ApplyOverrideProcessor implements ClassNodeProcessor {
 
     MethodNode result = new MethodNode();
     result.name = name;
-    result.access = targetMethodNode.access;
+    result.access = targetMethodNode.access | Opcodes.ACC_BRIDGE | Opcodes.ACC_SYNTHETIC;
     result.desc = targetMethodNode.desc;
 
     InsnList insn = result.instructions;
