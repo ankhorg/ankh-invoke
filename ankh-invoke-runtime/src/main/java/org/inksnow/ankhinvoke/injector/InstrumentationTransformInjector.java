@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class InstrumentationTransformInjector extends UnsafeClassInjector implements TransformInjector, ClassFileTransformer {
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(InstrumentationTransformInjector.class);
   private static final @NotNull String ANKH_INVOKE_PACKAGE_INTERNAL = AnkhInvoke.ANKH_INVOKE_PACKAGE.replace('.', '/');
 
   private final @NotNull List<@NotNull String> applyPrefixes;

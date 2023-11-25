@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ClassRemapperProcess implements ClassNodeProcessor {
-  private static final Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final Logger logger = LoggerFactory.getLogger(ClassRemapperProcess.class);
   private static final String IGNORE_NOT_FULL_SUPPORT_KEY = AnkhInvoke.ANKH_INVOKE_PACKAGE + ".asm.ignoreNotFullSupport";
   private static final boolean IGNORE_NOT_FULL_SUPPORT = Boolean.getBoolean(IGNORE_NOT_FULL_SUPPORT_KEY);
 

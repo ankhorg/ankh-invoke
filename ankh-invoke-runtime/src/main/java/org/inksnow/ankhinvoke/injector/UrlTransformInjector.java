@@ -31,7 +31,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 public class UrlTransformInjector extends URLStreamHandler implements TransformInjector {
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(UrlTransformInjector.class);
   private static final @NotNull MethodHandle URL_CLASS_LOADER_ADD_URL_HANDLE = createUrlClassLoaderAddUrlHandle();
   public static final @NotNull String PROTOCOL_PREFIX = "ankh-invoke-internal-url-transform-injector-";
 

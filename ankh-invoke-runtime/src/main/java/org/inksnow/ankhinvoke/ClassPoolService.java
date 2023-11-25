@@ -6,12 +6,15 @@ import org.inksnow.ankhinvoke.comments.InternalName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Function;
 
 public final class ClassPoolService {
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(ClassPoolService.class);
   private static final String OBJECT_INTERNAL_NAME = "java/lang/Object";
   private final @NotNull Map<@InternalName @NotNull String, @NotNull ClassPoolNode> classPoolNodeMap = new ConcurrentSkipListMap<>();
   private final @NotNull @Unmodifiable List<@NotNull ClassPoolLoader> poolLoaderList;
@@ -58,7 +61,7 @@ public final class ClassPoolService {
     return null;
   }
 
-  public boolean instanceOf(@InternalName @Nullable String classAName, @InternalName @NotNull String classBName) {
+  private boolean instanceOfImpl(@InternalName @Nullable String classAName, @InternalName @NotNull String classBName) {
     // null instanceOf anything is false
     if (classAName == null) {
       return false;
@@ -130,8 +133,16 @@ public final class ClassPoolService {
     return false;
   }
 
+  public boolean instanceOf(@InternalName @Nullable String classAName, @InternalName @NotNull String classBName) {
+    boolean result = instanceOfImpl(classAName, classBName);
+    logger.debug("instanceOf: {} instanceof {} = {}", classAName, classBName, result);
+    return result;
+  }
+
   public boolean isAssignableFrom(@InternalName @NotNull String classAName, @InternalName @Nullable String classBName) {
-    return instanceOf(classBName, classAName);
+    boolean result = instanceOfImpl(classBName, classAName);
+    logger.debug("instanceOf: {} instanceof {} = {}", classBName, classAName, result);
+    return result;
   }
 
   public static final class Builder {

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -30,7 +29,9 @@ public class ApplyReferenceProcessor extends ClassRemapperProcess {
     if (methodInsn == null) {
       return;
     }
-    ReferenceMetadata metadata = referenceService.get(methodInsn.owner);
+    ReferenceMetadata metadata = (methodInsn.getOpcode() == Opcodes.INVOKESPECIAL) ?
+        referenceService.getSingle(methodInsn.owner) :
+        referenceService.get(methodInsn.owner);
     ReferenceMetadata.Entry entry = metadata.method(methodInsn.name + methodInsn.desc);
     if(entry == null) {
       if (true || metadata.isEmpty()) {
@@ -59,7 +60,7 @@ public class ApplyReferenceProcessor extends ClassRemapperProcess {
     if (fieldInsn == null) {
       return;
     }
-    ReferenceMetadata metadata = referenceService.get(fieldInsn.owner);
+    ReferenceMetadata metadata = referenceService.getSingle(fieldInsn.owner);
     ReferenceMetadata.Entry entry = metadata.field(fieldInsn.name + ":" + fieldInsn.desc);
     if(entry == null) {
       if (true || metadata.isEmpty()) {

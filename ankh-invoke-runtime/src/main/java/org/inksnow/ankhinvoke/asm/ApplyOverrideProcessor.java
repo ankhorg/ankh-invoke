@@ -1,6 +1,9 @@
 package org.inksnow.ankhinvoke.asm;
 
-import org.inksnow.ankhinvoke.*;
+import org.inksnow.ankhinvoke.ClassPoolService;
+import org.inksnow.ankhinvoke.PredicateService;
+import org.inksnow.ankhinvoke.ReferenceService;
+import org.inksnow.ankhinvoke.RemapService;
 import org.inksnow.ankhinvoke.method.ParsedMethod;
 import org.inksnow.ankhinvoke.reference.ReferenceMetadata;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +18,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class ApplyOverrideProcessor implements ClassNodeProcessor {
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(ApplyOverrideProcessor.class);
   private static final @NotNull Function<@NotNull String, @NotNull List<@NotNull MethodNode>> METHOD_NODE_LIST_FUNCTION = it->new ArrayList<>();
   private final @NotNull ReferenceService referenceService;
   private final @NotNull PredicateService predicateService;

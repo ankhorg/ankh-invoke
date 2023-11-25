@@ -6,14 +6,21 @@ import org.inksnow.ankhinvoke.reference.ReferenceMetadata;
 import org.inksnow.ankhinvoke.reference.ReferenceSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Function;
 
 public class ReferenceService {
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(ReferenceService.class);
   private final @NotNull @Unmodifiable List<@InternalName @NotNull String> packageList;
   private final @NotNull @Unmodifiable List<@NotNull ReferenceSource> sourceList;
+
+  private final @NotNull Map<@InternalName @NotNull String, @NotNull ReferenceMetadata> singleMetadataCache = new ConcurrentSkipListMap<>();
+  private final @NotNull Function<@InternalName @NotNull String, @NotNull ReferenceMetadata> singleMetadataLoad = this::loadSingle;
+
   private final @NotNull Map<@InternalName @NotNull String, @NotNull ReferenceMetadata> metadataCache = new ConcurrentSkipListMap<>();
   private final @NotNull Function<@InternalName @NotNull String, @NotNull ReferenceMetadata> metadataLoad = this::load;
 
@@ -33,18 +40,12 @@ public class ReferenceService {
     return false;
   }
 
-  public @NotNull ReferenceMetadata get(@InternalName @NotNull String owner) {
-    return metadataCache.computeIfAbsent(owner, metadataLoad);
+  public @NotNull ReferenceMetadata getSingle(@InternalName @NotNull String owner) {
+    return singleMetadataCache.computeIfAbsent(owner, singleMetadataLoad);
   }
 
-  private @NotNull ReferenceMetadata load(@InternalName @NotNull String owner) {
+  private @NotNull ReferenceMetadata loadSingle(@InternalName @NotNull String owner) {
     ReferenceMetadata.Builder builder = ReferenceMetadata.builder();
-    loadImpl(owner, builder, true);
-    return builder.build();
-  }
-
-  private void loadImpl(@InternalName @NotNull String owner, ReferenceMetadata.@NotNull Builder builder, boolean withRoot) {
-    boolean withSelf = canBeReferenceClass(owner);
 
     List<ReferenceMetadata> metadataList = new ArrayList<>(sourceList.size());
     for (ReferenceSource source : sourceList) {
@@ -54,21 +55,41 @@ public class ReferenceService {
       }
     }
 
-    Set<String> scannedClass = new HashSet<>();
     for (ReferenceMetadata metadata : metadataList) {
-      for (String className : metadata.superClasses()) {
-        if (scannedClass.add(className)) {
-          loadImpl(className, builder, false);
-        }
+      builder.append(metadata, true);
+    }
+
+    return builder.build();
+  }
+
+  public @NotNull ReferenceMetadata get(@InternalName @NotNull String owner) {
+    return metadataCache.computeIfAbsent(owner, metadataLoad);
+  }
+
+  private @NotNull ReferenceMetadata load(@InternalName @NotNull String owner) {
+    logger.debug("reference service load {}", owner);
+    ReferenceMetadata.Builder builder = ReferenceMetadata.builder();
+    loadImpl(owner, builder, true);
+    ReferenceMetadata result = builder.build();
+    logger.trace("reference service load {} result: {}", owner, result);
+    return result;
+  }
+
+  private void loadImpl(@InternalName @NotNull String owner, ReferenceMetadata.@NotNull Builder builder, boolean withRoot) {
+    boolean withSelf = canBeReferenceClass(owner);
+    ReferenceMetadata metadata = getSingle(owner);
+
+    Set<String> scannedClass = new HashSet<>();
+    for (String className : metadata.superClasses()) {
+      if (scannedClass.add(className)) {
+        loadImpl(className, builder, false);
       }
     }
 
-    for (ReferenceMetadata metadata : metadataList) {
-      if (withSelf) {
-        builder.append(metadata, withRoot);
-      } else {
-        builder.appendSuperClass(metadata.superClasses());
-      }
+    if (withSelf) {
+      builder.append(metadata, withRoot);
+    } else {
+      builder.appendSuperClass(metadata.superClasses());
     }
   }
 

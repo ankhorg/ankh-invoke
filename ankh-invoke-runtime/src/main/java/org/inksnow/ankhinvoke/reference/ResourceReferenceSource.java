@@ -1,7 +1,6 @@
 package org.inksnow.ankhinvoke.reference;
 
 import org.inksnow.ankhinvoke.asm.AsmUtil;
-import org.inksnow.ankhinvoke.codec.BlobMap;
 import org.inksnow.ankhinvoke.codec.BlobReference;
 import org.inksnow.ankhinvoke.comments.HandleBy;
 import org.inksnow.ankhinvoke.comments.InternalName;
@@ -17,7 +16,6 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -50,7 +48,7 @@ public class ResourceReferenceSource implements ReferenceSource {
   @Override
   public @Nullable ReferenceMetadata load(@InternalName @NotNull String name) {
 
-    URL url = loadFirst(name + ".class", name + ".ankh-invoke-reference.class");
+    URL url = loadFirst(name + ".class", name + ".ankh-invoke.class", name + ".ankh-invoke-reference.class");
     if(url != null) {
       return loadClassMetadata(url);
     }

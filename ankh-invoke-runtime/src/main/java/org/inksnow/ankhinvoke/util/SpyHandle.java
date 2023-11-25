@@ -25,7 +25,7 @@ public class SpyHandle {
   public static final MethodHandle LOGGER_INFO;
   public static final MethodHandle LOGGER_WARN;
   public static final MethodHandle LOGGER_ERROR;
-  private static final Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final Logger logger = LoggerFactory.getLogger(SpyHandle.class);
   private static final MethodHandles.Lookup LOOKUP;
 
   static {

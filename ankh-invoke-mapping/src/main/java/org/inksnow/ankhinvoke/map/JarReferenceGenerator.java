@@ -14,7 +14,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
 public class JarReferenceGenerator {
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvokeMapping.ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(JarReferenceGenerator.class);
   private final @NotNull BlobReferenceGenerator blobReferenceGenerator;
 
   public JarReferenceGenerator(@NotNull BlobReferenceGenerator blobReferenceGenerator) {

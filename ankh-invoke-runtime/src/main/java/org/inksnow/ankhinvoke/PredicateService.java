@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class PredicateService {
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(PredicateService.class);
   private final @NotNull @Unmodifiable Map<@NotNull String, @NotNull PredicateMachine> machineRegistry;
 
   private PredicateService(@NotNull @Unmodifiable Map<@NotNull String, @NotNull PredicateMachine> machineRegistry) {

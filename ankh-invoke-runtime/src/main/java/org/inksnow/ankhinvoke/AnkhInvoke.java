@@ -28,7 +28,7 @@ public final class AnkhInvoke {
   public static final boolean DEBUG = Boolean.parseBoolean(System.getProperty(ANKH_INVOKE_PACKAGE + ".debug"))
       || Boolean.parseBoolean(System.getProperty(RAW_ANKH_INVOKE_PACKAGE + ".debug"));
   public static final @NotNull Path DUMP_PATH = Paths.get(System.getProperty(ANKH_INVOKE_PACKAGE + ".dumppath", "ankh-invoke"));
-  private static final @NotNull Logger logger = LoggerFactory.getLogger(ANKH_INVOKE_PACKAGE);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(AnkhInvoke.class);
 
   private static final @NotNull Object PENDING_PROCESS_OBJECT = new Object();
   private static final @NotNull Object NOT_PROCESS_OBJECT = new Object();

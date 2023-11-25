@@ -13,7 +13,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 
 public class LoadedClassPoolLoader extends ClassInstancePoolLoader {
-  private static final Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final Logger logger = LoggerFactory.getLogger(LoadedClassPoolLoader.class);
   private static final @NotNull MethodHandle findLoadedMethodHandle = bootstrapFindLoadedMethodHandle();
   private final @NotNull ClassLoader classLoader;
 

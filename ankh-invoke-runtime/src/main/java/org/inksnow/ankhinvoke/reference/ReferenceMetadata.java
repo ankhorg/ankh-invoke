@@ -87,15 +87,19 @@ public final class ReferenceMetadata {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ReferenceMetadata that = (ReferenceMetadata) o;
+    ReferenceMetadata metadata = (ReferenceMetadata) o;
 
-    if (!fieldMap.equals(that.fieldMap)) return false;
-    return methodMap.equals(that.methodMap);
+    if (!superClasses.equals(metadata.superClasses)) return false;
+    if (!handles.equals(metadata.handles)) return false;
+    if (!fieldMap.equals(metadata.fieldMap)) return false;
+    return methodMap.equals(metadata.methodMap);
   }
 
   @Override
   public int hashCode() {
-    int result = fieldMap.hashCode();
+    int result = superClasses.hashCode();
+    result = 31 * result + handles.hashCode();
+    result = 31 * result + fieldMap.hashCode();
     result = 31 * result + methodMap.hashCode();
     return result;
   }
@@ -103,7 +107,9 @@ public final class ReferenceMetadata {
   @Override
   public String toString() {
     return "ReferenceMetadata{" +
-        "fieldMap=" + fieldMap +
+        "superClasses=" + superClasses +
+        ", handles=" + handles +
+        ", fieldMap=" + fieldMap +
         ", methodMap=" + methodMap +
         '}';
   }

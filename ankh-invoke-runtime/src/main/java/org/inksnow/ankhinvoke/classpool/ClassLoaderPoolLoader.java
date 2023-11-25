@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClassLoaderPoolLoader extends ClassInstancePoolLoader {
-  private static final Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final Logger logger = LoggerFactory.getLogger(ClassLoaderPoolLoader.class);
   private final @NotNull ClassLoader classLoader;
 
   public ClassLoaderPoolLoader(@NotNull ClassLoader classLoader) {

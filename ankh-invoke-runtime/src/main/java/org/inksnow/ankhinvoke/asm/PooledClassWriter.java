@@ -1,6 +1,5 @@
 package org.inksnow.ankhinvoke.asm;
 
-import org.inksnow.ankhinvoke.AnkhInvoke;
 import org.inksnow.ankhinvoke.ClassPoolService;
 import org.inksnow.ankhinvoke.classpool.ClassPoolNode;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PooledClassWriter extends ClassWriter {
-  private static final Logger logger = LoggerFactory.getLogger(AnkhInvoke.ANKH_INVOKE_PACKAGE);
+  private static final Logger logger = LoggerFactory.getLogger(PooledClassWriter.class);
   private final @NotNull ClassPoolService classPoolService;
 
   public PooledClassWriter(@NotNull ClassPoolService classPoolService, int flags) {
@@ -19,6 +18,12 @@ public class PooledClassWriter extends ClassWriter {
 
   @Override
   protected String getCommonSuperClass(String type1, String type2) {
+    String result = getCommonSuperClassImpl(type1, type2);
+    logger.debug("getCommonSuperClass({}, {}) = {}", type1, type2, result);
+    return result;
+  }
+
+  private String getCommonSuperClassImpl(String type1, String type2) {
     ClassPoolNode class1 = classPoolService.get(type1);
     if (class1 == null) {
       throw new TypeNotPresentException(type1, null);
