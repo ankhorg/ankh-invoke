@@ -430,6 +430,14 @@ public final class ReferenceMetadata {
       return this;
     }
 
+    public @NotNull Builder appendSuperClass(@InternalName @Nullable List<@NotNull String> superClasses) {
+      if (superClasses != null) {
+        this.superClasses.addAll(superClasses);
+      }
+      return this;
+    }
+
+
     public @NotNull Builder appendHandle(@NotNull Handle handle) {
       handles.add(handle);
       return this;

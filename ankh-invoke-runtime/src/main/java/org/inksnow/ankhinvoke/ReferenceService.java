@@ -1,6 +1,5 @@
 package org.inksnow.ankhinvoke;
 
-import org.inksnow.ankhinvoke.classpool.ClassPoolNode;
 import org.inksnow.ankhinvoke.comments.InternalName;
 import org.inksnow.ankhinvoke.comments.NormalName;
 import org.inksnow.ankhinvoke.reference.ReferenceMetadata;
@@ -35,11 +34,7 @@ public class ReferenceService {
   }
 
   public @NotNull ReferenceMetadata get(@InternalName @NotNull String owner) {
-    if (canBeReferenceClass(owner)) {
-      return metadataCache.computeIfAbsent(owner, metadataLoad);
-    } else {
-      return ReferenceMetadata.empty();
-    }
+    return metadataCache.computeIfAbsent(owner, metadataLoad);
   }
 
   private @NotNull ReferenceMetadata load(@InternalName @NotNull String owner) {
@@ -49,29 +44,30 @@ public class ReferenceService {
   }
 
   private void loadImpl(@InternalName @NotNull String owner, ReferenceMetadata.@NotNull Builder builder, boolean withRoot) {
-    if (canBeReferenceClass(owner)) {
-      List<ReferenceMetadata> metadataList = new ArrayList<>(sourceList.size());
-      for (ReferenceSource source : sourceList) {
-        ReferenceMetadata metadata = source.load(owner);
-        if (metadata != null) {
-          metadataList.add(metadata);
+    boolean withSelf = canBeReferenceClass(owner);
+
+    List<ReferenceMetadata> metadataList = new ArrayList<>(sourceList.size());
+    for (ReferenceSource source : sourceList) {
+      ReferenceMetadata metadata = source.load(owner);
+      if (metadata != null) {
+        metadataList.add(metadata);
+      }
+    }
+
+    Set<String> scannedClass = new HashSet<>();
+    for (ReferenceMetadata metadata : metadataList) {
+      for (String className : metadata.superClasses()) {
+        if (scannedClass.add(className)) {
+          loadImpl(className, builder, false);
         }
       }
+    }
 
-      Set<String> scannedClass = new HashSet<>();
-      for (ReferenceMetadata metadata : metadataList) {
-        for (String className : metadata.superClasses()) {
-          if (scannedClass.add(className)) {
-            loadImpl(className, builder, false);
-          }
-        }
-      }
-
-      for (ReferenceSource source : sourceList) {
-        ReferenceMetadata metadata = source.load(owner);
-        if (metadata != null) {
-          builder.append(metadata, withRoot);
-        }
+    for (ReferenceMetadata metadata : metadataList) {
+      if (withSelf) {
+        builder.append(metadata, withRoot);
+      } else {
+        builder.appendSuperClass(metadata.superClasses());
       }
     }
   }

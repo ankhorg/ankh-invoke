@@ -3,7 +3,6 @@ package org.inksnow.ankhinvoke.map;
 import org.inksnow.ankhinvoke.codec.BlobReference;
 import org.inksnow.ankhinvoke.codec.TextMetadata;
 import org.inksnow.ankhinvoke.map.asm.AddProcessedAnnotationClassVisitor;
-import org.inksnow.ankhinvoke.map.asm.CutHandleByVisitor;
 import org.inksnow.ankhinvoke.map.asm.ScanReferenceVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,9 +38,8 @@ public final class BlobReferenceGenerator {
     if(!name.endsWith(".class")) {
       return;
     }
-    if (!canBeReferenceClass(name.substring(0, name.length() - ".class".length()))) {
-      return;
-    }
+    boolean canBeReferenceClass = canBeReferenceClass(name.substring(0, name.length() - ".class".length()));
+
     ClassNode classNode = new ClassNode();
     ClassReader classReader = new ClassReader(in);
     classReader.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
@@ -53,23 +51,25 @@ public final class BlobReferenceGenerator {
       builder.appendSuperClass(interfaceName);
     }
 
-    loadAnnotationList(classNode.visibleAnnotations, builder::appendHandle);
+    if (canBeReferenceClass) {
+      loadAnnotationList(classNode.visibleAnnotations, builder::appendHandle);
 
-    for (MethodNode methodNode : classNode.methods) {
-      BlobReference.BlobEntry.Builder entryBuilder = BlobReference.BlobEntry.builder();
-      loadAnnotationList(methodNode.visibleAnnotations, entryBuilder::appendHandle);
-      BlobReference.BlobEntry blobEntry = entryBuilder.build();
-      if (!blobEntry.isEmpty()) {
-        builder.appendMethod(methodNode.name, methodNode.desc, blobEntry);
+      for (MethodNode methodNode : classNode.methods) {
+        BlobReference.BlobEntry.Builder entryBuilder = BlobReference.BlobEntry.builder();
+        loadAnnotationList(methodNode.visibleAnnotations, entryBuilder::appendHandle);
+        BlobReference.BlobEntry blobEntry = entryBuilder.build();
+        if (!blobEntry.isEmpty()) {
+          builder.appendMethod(methodNode.name, methodNode.desc, blobEntry);
+        }
       }
-    }
 
-    for (FieldNode fieldNode : classNode.fields) {
-      BlobReference.BlobEntry.Builder entryBuilder = BlobReference.BlobEntry.builder();
-      loadAnnotationList(fieldNode.visibleAnnotations, entryBuilder::appendHandle);
-      BlobReference.BlobEntry blobEntry = entryBuilder.build();
-      if (!blobEntry.isEmpty()) {
-        builder.appendField(fieldNode.name, fieldNode.desc, blobEntry);
+      for (FieldNode fieldNode : classNode.fields) {
+        BlobReference.BlobEntry.Builder entryBuilder = BlobReference.BlobEntry.builder();
+        loadAnnotationList(fieldNode.visibleAnnotations, entryBuilder::appendHandle);
+        BlobReference.BlobEntry blobEntry = entryBuilder.build();
+        if (!blobEntry.isEmpty()) {
+          builder.appendField(fieldNode.name, fieldNode.desc, blobEntry);
+        }
       }
     }
 
@@ -91,20 +91,24 @@ public final class BlobReferenceGenerator {
 
     System.out.println("name: " + name);
 
-    CutHandleByVisitor cutHandleBy = new CutHandleByVisitor(referenceMap);
+    BlobReference reference;
+    if (canBeReferenceClass(name)) {
+      reference = referenceMap.get(name.substring(0, name.length() - ".class".length()));
+    } else {
+      reference = null;
+    }
+
     ScanReferenceVisitor scanReference = new ScanReferenceVisitor(referenceMap);
 
     ClassWriter cw = new ClassWriter(Opcodes.ASM9);
 
     ClassVisitor cv = cw;
     cv = new AddProcessedAnnotationClassVisitor("ankh-invoke-userdev", cv);
-    cv = cutHandleBy.createClassVisitor(cv);
     cv = scanReference.createClassVisitor(cv);
 
     new ClassReader(in).accept(cv, 0);
 
-    if (cutHandleBy.isReferenceClass()) {
-      BlobReference reference = cutHandleBy.getReference();
+    if (reference != null) {
       metadata.append("scanned reference class at " + name)
           .append("  |- with " + reference.handles() + " handle(s)")
           .append("  |- with " + reference.methodMap().size() + " method(s)")
@@ -114,7 +118,7 @@ public final class BlobReferenceGenerator {
         reference.save(out);
       }
       return new ProcessAction(Action.KEEP, bout.toByteArray(), name.substring(0, name.length() - ".class".length()) + ".ankh-invoke-reference");
-    }else if(scanReference.usedClassWithReference() || cutHandleBy.getProcessed()) {
+    } else if (scanReference.usedClassWithReference()) {
       metadata.append("scanned invoke class at " + name);
       return new ProcessAction(Action.KEEP, cw.toByteArray(),
           disableClassRename ? null : (name.substring(0, name.length() - ".class".length()) + ".ankh-invoke.class"));
