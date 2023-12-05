@@ -76,38 +76,16 @@ public final class BlobMappingGenerator {
     this.classBeanMap = new HashMap<>();
   }
 
-  public void run() throws IOException {
-    String fileName = minecraftVersion + "_" + buildDataHash + "_" + (useSpigotMapping ? "spigot" : "mojang");
-    File cacheFile = getCacheFile("blobmap", fileName, false);
-    File cacheTmpFile = getCacheFile("blobmap", fileName, true);
-    if(!disableCache) {
-      if(targetFile.exists()) {
-        return;
-      } else if (cacheFile.exists()) {
-        Files.createParentDirs(targetFile);
-        Files.copy(cacheFile, targetFile);
-        return;
-      }
-    }
-
-    JsonObject buildDataInfo;
-    try (BufferedReader reader = getReader(buildDataHash, "info.json")) {
-      buildDataInfo = gson.fromJson(reader, JsonObject.class);
-    }
-    String minecraftVersion = buildDataInfo.get("minecraftVersion").getAsString();
-    if (!this.minecraftVersion.startsWith(minecraftVersion)) {
-      throw new IllegalStateException("Version mismatch: " + this.minecraftVersion + " != " + minecraftVersion);
-    }
-
-    String serverUrl = buildDataInfo.get("serverUrl").getAsString();
-
-    loadMappings(buildDataInfo);
-
-    try (JarInputStream in = new JarInputStream(new FileInputStream(getFile(null, serverUrl)))) {
-      scanJar(in);
-    }
-    saveBlobMap(cacheTmpFile, cacheFile);
-    Files.copy(cacheFile, targetFile);
+  public static void main(String[] args) throws IOException {
+    builder()
+        .setCacheDirectory(new File("/home/inkerbot/IdeaProjects/ankh-invoke-dev/ankh-invoke-nbt/target/maven-status/ankh-invoke-cache"))
+        .setTargetFile(new File("/home/inkerbot/IdeaProjects/ankh-invoke-dev/ankh-invoke-nbt/target/classes/org/inksnow/ankhinvoke/ankh-invoke-nbt/mappings/mojang-1.20.2"))
+        .setUseSpigotMapping(false)
+        .setLogFunction(System.out::println)
+        .setMinecraftVersion("1.20.2")
+        .setBuildDataHash("172197ceb99364701937947ea7fc424ecf1bb694")
+        .build()
+        .run();
   }
 
   private void saveBlobMap(File cacheTmpFile, File cacheFile) throws IOException {
@@ -197,37 +175,38 @@ public final class BlobMappingGenerator {
     }
   }
 
-  private void scanClass(@NotNull InputStream in) throws IOException {
-    ClassNode classNode = new ClassNode();
-    new ClassReader(in)
-        .accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-
-    JarRemapper remapper = useSpigotMapping ? spigotRemapper : mojangRemapper;
-    String mappedClassName = remapper.map(classNode.name);
-    String spigotClassName = spigotRemapper.map(classNode.name);
-    ClassBean classBean = classBeanMap.getOrDefault(mappedClassName, new ClassBean(mappedClassName, spigotClassName));
-
-    for (FieldNode field : classNode.fields) {
-      String mappedFieldName = remapper.mapFieldName(classNode.name, field.name, field.desc);
-
-      if (!mappedFieldName.equals(field.name)) {
-        String mappedFieldDesc = remapper.mapDesc(field.desc);
-        classBean.fieldMap().put(new FieldBean(mappedClassName, mappedFieldName, mappedFieldDesc), field.name);
+  public void run() throws IOException {
+    String fileName = minecraftVersion + "_" + buildDataHash + "_" + (useSpigotMapping ? "spigot" : "mojang");
+    File cacheFile = getCacheFile("blobmap", fileName, false);
+    File cacheTmpFile = getCacheFile("blobmap", fileName, true);
+    if (false && !disableCache) {
+      if(targetFile.exists()) {
+        return;
+      } else if (cacheFile.exists()) {
+        Files.createParentDirs(targetFile);
+        Files.copy(cacheFile, targetFile);
+        return;
       }
     }
 
-    for (MethodNode methodNode : classNode.methods) {
-      String mappedMethodName = remapper.mapMethodName(classNode.name, methodNode.name, methodNode.desc);
-
-      if (!mappedMethodName.equals(methodNode.name)) {
-        String mappedMethodDesc = mojangRemapper.mapDesc(methodNode.desc);
-        classBean.methodMap().put(new MethodBean(mappedClassName, mappedMethodName, mappedMethodDesc), methodNode.name);
-      }
+    JsonObject buildDataInfo;
+    try (BufferedReader reader = getReader(buildDataHash, "info.json")) {
+      buildDataInfo = gson.fromJson(reader, JsonObject.class);
+    }
+    String minecraftVersion = buildDataInfo.get("minecraftVersion").getAsString();
+    if (!this.minecraftVersion.startsWith(minecraftVersion)) {
+      throw new IllegalStateException("Version mismatch: " + this.minecraftVersion + " != " + minecraftVersion);
     }
 
-    if (!classBean.raw().endsWith(classBean.remapped()) || !classBean.fieldMap().isEmpty() || !classBean.methodMap().isEmpty()) {
-      classBeanMap.put(mappedClassName, classBean);
+    String serverUrl = buildDataInfo.get("serverUrl").getAsString();
+
+    loadMappings(buildDataInfo);
+
+    try (JarInputStream in = new JarInputStream(new FileInputStream(getFile(null, serverUrl)))) {
+      scanJar(in);
     }
+    saveBlobMap(cacheTmpFile, cacheFile);
+    Files.copy(cacheFile, targetFile);
   }
 
   private @NotNull File getFile(@Nullable String hash, @NotNull String path) throws IOException {
@@ -289,15 +268,53 @@ public final class BlobMappingGenerator {
     logFunction.accept(message.toString());
   }
 
-  private void log(@NotNull Object @NotNull ... messages) {
-    for (Object message : messages) {
-      if(message instanceof Throwable) {
-        try(PrintStream printStream = new LineBufferPrintStream(logFunction)) {
-          ((Throwable) message).printStackTrace(printStream);
-        }
-      } else {
-        logFunction.accept(message.toString());
+  private void scanClass(@NotNull InputStream in) throws IOException {
+    ClassNode classNode = new ClassNode();
+    new ClassReader(in)
+        .accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+
+    JarRemapper remapper = useSpigotMapping ? spigotRemapper : mojangRemapper;
+    String mappedClassName;
+    String spigotClassName;
+    if (classNode.nestHostClass != null && classNode.name.startsWith(classNode.nestHostClass + "$")) {
+      String innerName = classNode.name.substring(classNode.nestHostClass.length() + 1);
+      String mappedHostClassName = remapper.map(classNode.nestHostClass);
+      String spigotHostClassName = spigotRemapper.map(classNode.nestHostClass);
+
+      String mappedInnerClassName = remapper.mapInnerClassName(classNode.name, classNode.nestHostClass, innerName);
+      String spigotInnerClassName = spigotRemapper.mapInnerClassName(classNode.name, classNode.nestHostClass, innerName);
+
+      mappedClassName = mappedHostClassName + "$" + (mappedInnerClassName.isEmpty() ? innerName : mappedInnerClassName);
+      spigotClassName = spigotHostClassName + "$" + (spigotInnerClassName.isEmpty() ? innerName : spigotInnerClassName);
+
+      log("inner class found: ", classNode.name, " with host ", classNode.nestHostClass);
+    } else {
+      mappedClassName = remapper.map(classNode.name);
+      spigotClassName = spigotRemapper.map(classNode.name);
+    }
+    ClassBean classBean = classBeanMap.getOrDefault(mappedClassName, new ClassBean(mappedClassName, spigotClassName));
+
+    log("mapped class name: ", mappedClassName, " -> ", spigotClassName);
+    for (FieldNode field : classNode.fields) {
+      String mappedFieldName = remapper.mapFieldName(classNode.name, field.name, field.desc);
+
+      if (!mappedFieldName.equals(field.name)) {
+        String mappedFieldDesc = remapper.mapDesc(field.desc);
+        classBean.fieldMap().put(new FieldBean(mappedClassName, mappedFieldName, mappedFieldDesc), field.name);
       }
+    }
+
+    for (MethodNode methodNode : classNode.methods) {
+      String mappedMethodName = remapper.mapMethodName(classNode.name, methodNode.name, methodNode.desc);
+
+      if (!mappedMethodName.equals(methodNode.name)) {
+        String mappedMethodDesc = mojangRemapper.mapDesc(methodNode.desc);
+        classBean.methodMap().put(new MethodBean(mappedClassName, mappedMethodName, mappedMethodDesc), methodNode.name);
+      }
+    }
+
+    if (!classBean.raw().endsWith(classBean.remapped()) || !classBean.fieldMap().isEmpty() || !classBean.methodMap().isEmpty()) {
+      classBeanMap.put(mappedClassName, classBean);
     }
   }
 
@@ -373,6 +390,25 @@ public final class BlobMappingGenerator {
         buildDataHash = SpigotBuildData.requireVersion(minecraftVersion);
       }
       return new BlobMappingGenerator(logFunction, cacheDirectory, disableCache, targetFile, minecraftVersion, buildDataHash, useSpigotMapping);
+    }
+  }
+
+  private void log(@NotNull Object @NotNull ... messages) {
+    StringBuilder builder = new StringBuilder();
+    Throwable e = null;
+    for (int i = 0; i < messages.length; i++) {
+      Object message = messages[i];
+      if (i == messages.length - 1 && message instanceof Throwable) {
+        e = (Throwable) message;
+      } else {
+        builder.append(message);
+      }
+    }
+    logFunction.accept(builder.toString());
+    if (e != null) {
+      try (PrintStream printStream = new LineBufferPrintStream(logFunction)) {
+        e.printStackTrace(printStream);
+      }
     }
   }
 }
