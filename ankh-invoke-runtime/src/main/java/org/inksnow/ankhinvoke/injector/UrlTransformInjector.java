@@ -20,7 +20,6 @@ import java.lang.invoke.MethodType;
 import java.net.*;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -41,7 +40,7 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
 
   private final @NotNull Map<@NotNull String, byte @NotNull []> memoryRepository = new ConcurrentSkipListMap<>();
   private final @NotNull Set<@NotNull String> usedClasses = new ConcurrentSkipListSet<>();
-  private final @NotNull ThreadLocal<@NotNull Set<@NotNull String>> threadHiddenClasses = ThreadLocal.withInitial(HashSet::new);
+  private final @NotNull Set<@NotNull String> threadHiddenClasses = new ConcurrentSkipListSet<>();
 
   public UrlTransformInjector(@NotNull URLClassLoader urlClassLoader) {
     this.protocol = PROTOCOL_PREFIX + System.identityHashCode(this);
@@ -93,26 +92,16 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
 
   @Override
   protected @NotNull URLConnection openConnection(@NotNull URL u) throws IOException {
-    if (!protocol.equals(u.getProtocol())) {
-      throw new ProtocolException("unsupported protocol: " + protocol);
-    }
     if(ankhInvoke == null) {
       throw new IOException("url-transform-injector not ready");
     }
-    String fileName = u.getFile();
-    if (fileName.startsWith("/")) {
-      fileName = fileName.substring(1);
-    }
-    if (!fileName.endsWith(".class")) {
-      throw new FileNotFoundException(fileName);
-    }
-    String className = fileName.substring(0, fileName.length() - ".class".length());
-
-    if(className.endsWith(".ankh-invoke")) {
-      throw new FileNotFoundException("class: " + className + " is loaded by provider only");
+    if (!protocol.equals(u.getProtocol())) {
+      throw new ProtocolException("unsupported protocol: " + protocol);
     }
 
-    if (threadHiddenClasses.get().contains(className)) {
+    String className = fetchClassNameFromUrl(u);
+
+    if (threadHiddenClasses.contains(className)) {
       throw new FileNotFoundException("class: " + className + " is pending loading source");
     }
 
@@ -120,10 +109,10 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
     if (classProvider instanceof UrlClassProvider) {
       URL url;
       try {
-        threadHiddenClasses.get().add(className);
+        threadHiddenClasses.add(className);
         url = ((UrlClassProvider) classProvider).provideUrl(className);
       }finally {
-        threadHiddenClasses.get().remove(className);
+        threadHiddenClasses.remove(className);
       }
       if (url == null) {
         throw new FileNotFoundException("class: " + className);
@@ -140,12 +129,28 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
     }
   }
 
+  private @NotNull String fetchClassNameFromUrl(@NotNull URL u) throws IOException {
+    String fileName = u.getFile();
+    if (fileName.startsWith("/")) {
+      fileName = fileName.substring(1);
+    }
+    if (!fileName.endsWith(".class")) {
+      throw new FileNotFoundException(fileName);
+    }
+    String className = fileName.substring(0, fileName.length() - ".class".length());
+
+    if (className.endsWith(".ankh-invoke")) {
+      throw new FileNotFoundException("class: " + className + " is loaded by provider only");
+    }
+    return className;
+  }
+
   private byte @NotNull [] provideBytes(@InternalName @NotNull String className) throws IOException {
     if(ankhInvoke == null) {
       throw new IOException("url-transform-injector not ready");
     }
     try {
-      threadHiddenClasses.get().add(className);
+      threadHiddenClasses.add(className);
       byte[] bytes = memoryRepository.get(className);
       if (bytes == null) {
         bytes = ankhInvoke.processClass(className);
@@ -158,7 +163,7 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
       }
       return bytes;
     }finally {
-      threadHiddenClasses.get().remove(className);
+      threadHiddenClasses.remove(className);
     }
   }
 
