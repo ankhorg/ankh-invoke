@@ -96,7 +96,7 @@ public final class BlobMappingGenerator {
     }
     Files.createParentDirs(cacheFile);
     if (!cacheTmpFile.renameTo(cacheFile)) {
-      throw new IOException("Failed to rename " + cacheTmpFile + " to " + cacheFile);
+      throw new IOException("[saveBlobMap] Failed to rename " + cacheTmpFile + " to " + cacheFile);
     }
     Files.createParentDirs(targetFile);
     Files.copy(cacheFile, targetFile);
@@ -254,7 +254,7 @@ public final class BlobMappingGenerator {
       }
     }
     if (!cacheTmpFile.renameTo(cacheFile)) {
-      throw new IOException("Failed to rename " + cacheTmpFile + " to " + cacheFile);
+      throw new IOException("[getFile] Failed to rename " + cacheTmpFile + " to " + cacheFile);
     }
     return cacheFile;
   }
