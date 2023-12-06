@@ -248,6 +248,11 @@ public final class BlobMappingGenerator {
     }
 
     Files.createParentDirs(cacheFile);
+    if (cacheFile.exists()) {
+      if (!cacheFile.delete()) {
+        throw new IOException("Failed to delete " + cacheFile);
+      }
+    }
     if (!cacheTmpFile.renameTo(cacheFile)) {
       throw new IOException("Failed to rename " + cacheTmpFile + " to " + cacheFile);
     }
