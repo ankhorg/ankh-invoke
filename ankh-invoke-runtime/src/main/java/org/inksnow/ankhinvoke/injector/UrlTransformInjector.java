@@ -142,7 +142,7 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
     if (className.endsWith(".ankh-invoke")) {
       throw new FileNotFoundException("class: " + className + " is loaded by provider only");
     }
-    return className;
+    return URLDecoder.decode(className, "UTF-8");
   }
 
   private byte @NotNull [] provideBytes(@InternalName @NotNull String className) throws IOException {
