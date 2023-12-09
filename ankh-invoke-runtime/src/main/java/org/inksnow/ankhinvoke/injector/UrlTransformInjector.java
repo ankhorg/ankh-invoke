@@ -72,7 +72,7 @@ public class UrlTransformInjector extends URLStreamHandler implements TransformI
     } catch (ClassNotFoundException e) {
       throw DstUnsafe.throwImpl(e);
     }
-    if (!usedClasses.contains(name)) {
+    if (AnkhInvoke.DEBUG && !usedClasses.contains(name)) {
       String msg = "Failed to inject " + name +" with url, did you apply ankh-invoke-userdev?";
       logger.error(msg, new IllegalStateException(msg));
     }
