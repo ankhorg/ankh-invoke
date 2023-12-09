@@ -38,9 +38,10 @@ public final class ClassPoolNode {
     for (int i = 0; i < interfaceClasses.length; i++) {
       interfaceClassNames[i] = Type.getInternalName(interfaceClasses[i]);
     }
+    Class<?> superClass = clazz.getSuperclass();
     return ClassPoolNode.builder()
         .access(clazz.getModifiers())
-        .superClass(Type.getInternalName(clazz))
+        .superClass(superClass == null ? null : Type.getInternalName(superClass))
         .implementClasses(interfaceClassNames)
         .build();
   }
