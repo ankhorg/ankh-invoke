@@ -140,7 +140,7 @@ public class BuildMappingsTask extends DefaultTask {
           BlobMappingGenerator generator = BlobMappingGenerator.builder()
               .setCacheDirectory(cacheDirectory)
               .setTargetFile(new File(registryDirectory, "mappings/" + injectBean.getName()))
-              .setLogFunction(getLogger()::info)
+              .setLogFunction(getLogger()::warn)
               .setMinecraftVersion(injectBean.getMinecraftVersion())
               .setBuildDataHash(injectBean.getBuildDataHash())
               .setUseSpigotMapping(injectBean.isUseSpigotMapping())

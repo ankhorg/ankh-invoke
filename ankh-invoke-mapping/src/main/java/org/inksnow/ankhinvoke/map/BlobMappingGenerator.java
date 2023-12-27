@@ -164,7 +164,7 @@ public final class BlobMappingGenerator {
         continue;
       }
       if (entry.getName().endsWith(".jar")) {
-        log("process nested jar: " + entry.getName());
+        log("process nested jar: ", entry.getName());
         try (JarInputStream jarIn = new JarInputStream(new NoCloseInputStream(in))) {
           scanJar(jarIn);
         }
@@ -174,13 +174,14 @@ public final class BlobMappingGenerator {
         try(InputStream classIn = new NoCloseInputStream(in)) {
           scanClass(classIn);
         }catch (Exception e) {
-          log("Failed to scan class, skipped: " + entry.getName(), e);
+          log("Failed to scan class, skipped: ", entry.getName(), e);
         }
       }
     }
   }
 
   public void run() throws IOException {
+    log("generate reobf mappings");
     String fileName = minecraftVersion + "_" + buildDataHash + "_" + (useSpigotMapping ? "spigot" : "mojang");
     File cacheFile = getCacheFile("blobmap", fileName, false);
     File cacheTmpFile = getCacheFile("blobmap", fileName, true);
@@ -212,6 +213,7 @@ public final class BlobMappingGenerator {
     }
     saveBlobMap(cacheTmpFile, cacheFile);
     Files.copy(cacheFile, targetFile);
+    log("generate success, saved to ", targetFile);
   }
 
   private @NotNull File getFile(@Nullable String hash, @NotNull String path) throws IOException {
@@ -232,7 +234,7 @@ public final class BlobMappingGenerator {
     if (cacheFile.exists() && !disableCache) {
       return cacheFile;
     }
-    log("downloading: " + url);
+    log("downloading: ", url, " to ", cacheFile);
     URLConnection connection = url.openConnection();
     if (connection instanceof HttpURLConnection) {
       HttpURLConnection httpConnection = (HttpURLConnection) connection;
@@ -269,10 +271,6 @@ public final class BlobMappingGenerator {
     return new BufferedReader(new InputStreamReader(new FileInputStream(getFile(hash, path)), StandardCharsets.UTF_8));
   }
 
-  private void log(@NotNull Object message) {
-    logFunction.accept(message.toString());
-  }
-
   private void scanClass(@NotNull InputStream in) throws IOException {
     ClassNode classNode = new ClassNode();
     new ClassReader(in)
@@ -292,14 +290,18 @@ public final class BlobMappingGenerator {
       mappedClassName = mappedHostClassName + "$" + (mappedInnerClassName.isEmpty() ? innerName : mappedInnerClassName);
       spigotClassName = spigotHostClassName + "$" + (spigotInnerClassName.isEmpty() ? innerName : spigotInnerClassName);
 
-      log("inner class found: ", classNode.name, " with host ", classNode.nestHostClass);
+      if (AnkhInvokeMapping.DEBUG) {
+        log("inner class found: ", classNode.name, " with host ", classNode.nestHostClass);
+      }
     } else {
       mappedClassName = remapper.map(classNode.name);
       spigotClassName = spigotRemapper.map(classNode.name);
     }
     ClassBean classBean = classBeanMap.getOrDefault(mappedClassName, new ClassBean(mappedClassName, spigotClassName));
 
-    log("mapped class name: ", mappedClassName, " -> ", spigotClassName);
+    if (AnkhInvokeMapping.DEBUG) {
+      log("mapped class name: ", mappedClassName, " -> ", spigotClassName);
+    }
     for (FieldNode field : classNode.fields) {
       String mappedFieldName = remapper.mapFieldName(classNode.name, field.name, field.desc);
 
