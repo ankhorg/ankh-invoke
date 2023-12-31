@@ -135,19 +135,17 @@ public final class AnkhInvoke {
 
   private boolean fastScanClassImpl(byte @NotNull [] inputBytes) {
     try {
-      ScanReferenceClassVisitor cv = new ScanReferenceClassVisitor(referenceService);
+      ScanReferenceVisitor scanReferenceVisitor = new ScanReferenceVisitor(referenceService);
       ClassReader cr = new ClassReader(inputBytes);
-      cr.accept(cv, 0);
-    } catch (ScanReferenceClassVisitor.FoundedException e) {
-      logger.debug("Fast scan class founded");
-      return true;
+      cr.accept(scanReferenceVisitor.createClassVisitor(), 0);
+
+      return scanReferenceVisitor.usedClassWithReference();
     } catch (Throwable e) {
       if (AnkhInvoke.DEBUG) {
         logger.error("Failed to fast scan class", e);
       }
+      return false;
     }
-    logger.debug("Fast scan class not founded");
-    return false;
   }
 
   private @Nullable Class<?> injectClassImpl(@InternalName @NotNull String className) {
