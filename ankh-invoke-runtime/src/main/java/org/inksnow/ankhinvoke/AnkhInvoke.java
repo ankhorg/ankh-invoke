@@ -125,22 +125,28 @@ public final class AnkhInvoke {
   }
 
   private boolean fastScanClassImpl(@InternalName @NotNull String className) {
+    byte[] inputBytes = injectService.provide(className);
+    if (inputBytes == null) {
+      return false;
+    } else {
+      return fastScanClassImpl(inputBytes);
+    }
+  }
+
+  private boolean fastScanClassImpl(byte @NotNull [] inputBytes) {
     try {
-      byte[] inputBytes = injectService.provide(className);
-      if (inputBytes != null) {
-        ScanReferenceClassVisitor cv = new ScanReferenceClassVisitor(referenceService);
-        ClassReader cr = new ClassReader(inputBytes);
-        cr.accept(cv, 0);
-      }
+      ScanReferenceClassVisitor cv = new ScanReferenceClassVisitor(referenceService);
+      ClassReader cr = new ClassReader(inputBytes);
+      cr.accept(cv, 0);
     } catch (ScanReferenceClassVisitor.FoundedException e) {
-      logger.debug("Fast scan class {} founded", className);
+      logger.debug("Fast scan class founded");
       return true;
     } catch (Throwable e) {
       if (AnkhInvoke.DEBUG) {
-        logger.error("Failed to fast scan class {}", className, e);
+        logger.error("Failed to fast scan class", e);
       }
     }
-    logger.debug("Fast scan class {} not founded", className);
+    logger.debug("Fast scan class not founded");
     return false;
   }
 
@@ -164,6 +170,10 @@ public final class AnkhInvoke {
   }
 
   private byte @NotNull [] processClassImpl(byte @NotNull [] inputBytes, boolean scannedInner) {
+    if (!fastScanClassImpl(inputBytes)) {
+      return inputBytes;
+    }
+
     ClassNode classNode = new ClassNode();
     ClassReader classReader = new ClassReader(inputBytes);
     classReader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
