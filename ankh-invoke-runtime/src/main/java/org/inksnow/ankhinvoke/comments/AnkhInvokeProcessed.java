@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface AnkhInvokeProcessed {
   String time();
 
-  String by();
+  String[] by();
 }
