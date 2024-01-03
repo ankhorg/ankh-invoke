@@ -3,6 +3,7 @@ package org.inksnow.ankhinvoke.bukkit.injector;
 import bot.inker.acj.JvmHacker;
 import org.inksnow.ankhinvoke.AnkhInvoke;
 import org.inksnow.ankhinvoke.comments.InternalName;
+import org.inksnow.ankhinvoke.comments.NormalName;
 import org.inksnow.ankhinvoke.injector.TransformInjector;
 import org.inksnow.ankhinvoke.util.DstUnsafe;
 import org.inksnow.ankhinvoke.util.SpyHandle;
@@ -15,9 +16,7 @@ import java.io.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.security.ProtectionDomain;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.jar.JarEntry;
@@ -35,17 +34,19 @@ public class JarTransformInjector implements TransformInjector {
 
 
   private final @NotNull ClassLoader classLoader;
+  private final @NotNull List<@InternalName @NotNull String> transformPackages;
   private @Nullable AnkhInvoke ankhInvoke;
 
   private final @NotNull Map<@NotNull String, byte @NotNull []> memoryRepository = new ConcurrentSkipListMap<>();
   private final @NotNull Set<@NotNull String> usedClasses = new ConcurrentSkipListSet<>();
   private final @NotNull Set<@NotNull String> threadHiddenClasses = new ConcurrentSkipListSet<>();
 
-  public JarTransformInjector(@NotNull ClassLoader classLoader) {
+  private JarTransformInjector(@NotNull ClassLoader classLoader, @NotNull List<@InternalName @NotNull String> transformPackages) {
+    this.classLoader = classLoader;
+    this.transformPackages = transformPackages;
     if (!PLUGIN_CLASS_LOADER_CLASS.isInstance(classLoader)) {
       throw new IllegalArgumentException("JarTransformInjector classLoader must be instance of " + PLUGIN_CLASS_LOADER_CLASS_NAME);
     }
-    this.classLoader = classLoader;
   }
 
   private static @NotNull Class<?> createPluginClassLoaderClass() {
@@ -127,6 +128,11 @@ public class JarTransformInjector implements TransformInjector {
     }
   }
 
+  private boolean needTransform(@NotNull String className) {
+    return transformPackages.stream()
+        .anyMatch(className::startsWith);
+  }
+
   private byte @NotNull [] provideBytes(@InternalName @NotNull String className) throws IOException {
     if(ankhInvoke == null) {
       throw new IOException("url-transform-injector not ready");
@@ -149,6 +155,28 @@ public class JarTransformInjector implements TransformInjector {
     }
   }
 
+  public static final class Builder {
+    private final @NotNull Set<@InternalName @NotNull String> transformPackages = new LinkedHashSet<>();
+    private @Nullable ClassLoader classLoader;
+
+    public @NotNull Builder classLoader(@NotNull ClassLoader classLoader) {
+      this.classLoader = classLoader;
+      return this;
+    }
+
+    public @NotNull Builder transformPackage(@NormalName @NotNull String packageName) {
+      this.transformPackages.add(packageName.replace('.', '/'));
+      return this;
+    }
+
+    public @NotNull JarTransformInjector build() {
+      if (classLoader == null) {
+        throw new IllegalStateException("classLoader not set");
+      }
+      return new JarTransformInjector(classLoader, new ArrayList<>(transformPackages));
+    }
+  }
+
   private final class DelegateJarFile extends JarFile {
     private final JarFile jarFile;
 
@@ -164,12 +192,37 @@ public class JarTransformInjector implements TransformInjector {
 
     @Override
     public JarEntry getJarEntry(String name) {
-      return jarFile.getJarEntry(name);
+      if (ankhInvoke == null) {
+        throw new IllegalStateException("jar-transform-injector not ready");
+      }
+
+      if (!name.endsWith(".class")) {
+        return jarFile.getJarEntry(name);
+      }
+
+      String className = name.substring(0, name.length() - ".class".length());
+      if (threadHiddenClasses.contains(className) || (
+          !needTransform(className)
+              && jarFile.getJarEntry(className + ".ankh-invoke.class") == null)) {
+        return jarFile.getJarEntry(name);
+      }
+
+      try {
+        threadHiddenClasses.add(className);
+        provideBytes(className);
+      } catch (FileNotFoundException e) {
+        return null;
+      } catch (IOException e) {
+        throw DstUnsafe.throwImpl(e);
+      } finally {
+        threadHiddenClasses.remove(className);
+      }
+      return new JarEntry(name);
     }
 
     @Override
     public ZipEntry getEntry(String name) {
-      return jarFile.getEntry(name);
+      return getJarEntry(name);
     }
 
     @Override
@@ -184,28 +237,19 @@ public class JarTransformInjector implements TransformInjector {
 
     @Override
     public InputStream getInputStream(ZipEntry ze) throws IOException {
-      if(ankhInvoke == null) {
-        throw new IOException("jar-transform-injector not ready");
-      }
-
-      if(ze.getName().endsWith(".class")) {
+      if (!ze.getName().endsWith(".class")) {
         return jarFile.getInputStream(ze);
       }
 
       String className = ze.getName().substring(0, ze.getName().length() - ".class".length());
 
-      if (threadHiddenClasses.contains(className)) {
-        return jarFile.getInputStream(ze);
-      }
+      byte[] bytes = memoryRepository.get(className);
 
-      byte[] bytes;
-      try {
-        threadHiddenClasses.add(className);
-        bytes = provideBytes(className);
-      }finally {
-        threadHiddenClasses.remove(className);
+      if (bytes == null) {
+        return jarFile.getInputStream(ze);
+      } else {
+        return new ByteArrayInputStream(bytes);
       }
-      return new ByteArrayInputStream(bytes);
     }
 
     @Override
