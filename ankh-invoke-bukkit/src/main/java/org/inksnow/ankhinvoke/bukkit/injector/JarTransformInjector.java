@@ -73,7 +73,7 @@ public class JarTransformInjector implements TransformInjector {
     try {
       return JvmHacker.lookup()
           .findSetter(PLUGIN_CLASS_LOADER_CLASS, "jar", JarFile.class)
-          .asType(MethodType.methodType(void.class, JarFile.class, ClassLoader.class));
+          .asType(MethodType.methodType(void.class, ClassLoader.class, JarFile.class));
     } catch (NoSuchFieldException e) {
       throw new IllegalStateException("No jar field found in " + PLUGIN_CLASS_LOADER_CLASS + ", not supported bukkit version");
     } catch (IllegalAccessException e) {
