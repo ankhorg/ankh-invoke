@@ -42,24 +42,30 @@ public final class InjectService {
       this.ankhInvokeBuilder = ankhInvokeBuilder;
     }
 
-    public @NotNull Builder unsafeInjector(@NotNull ClassLoader classLoader) {
-      this.injector = new UnsafeClassInjector(classLoader);
+    public @NotNull Builder injector(@NotNull ClassInjector injector) {
+      this.injector = injector;
       return this;
+    }
+
+    public @NotNull Builder unsafeInjector(@NotNull ClassLoader classLoader) {
+      return injector(new UnsafeClassInjector(classLoader));
     }
 
     public @NotNull Builder urlInjector(@NotNull URLClassLoader urlClassLoader) {
-      this.injector = new UrlTransformInjector(urlClassLoader);
-      return this;
+      return injector(new UrlTransformInjector(urlClassLoader));
     }
 
     public @NotNull Builder instrumentationInjector(@NotNull ClassLoader classLoader, @NotNull String @NotNull ... applyPrefixes) {
-      this.injector = new InstrumentationTransformInjector(classLoader, applyPrefixes);
+      return injector(new InstrumentationTransformInjector(classLoader, applyPrefixes));
+    }
+
+    public @NotNull Builder provider(@NotNull ClassProvider provider) {
+      this.provider = provider;
       return this;
     }
 
     public @NotNull Builder classLoaderProvider(@NotNull ClassLoader classLoader) {
-      this.provider = new ClassLoaderProvider(classLoader);
-      return this;
+      return provider(new ClassLoaderProvider(classLoader));
     }
 
     public AnkhInvoke.@NotNull Builder build() {
