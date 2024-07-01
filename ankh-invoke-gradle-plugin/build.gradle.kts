@@ -12,6 +12,11 @@ repositories {
     mavenLocal()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_8
+    targetCompatibility = JavaVersion.VERSION_8
+}
+
 gradlePlugin {
     plugins {
         create("ankh-invoke-gradle-plugin") {
@@ -26,6 +31,10 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
 }
 
 tasks.test {
