@@ -2,6 +2,8 @@ package org.inksnow.ankhinvoke.bukkit.util;
 
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum CraftBukkitVersion {
   ALL,
@@ -21,9 +23,11 @@ public enum CraftBukkitVersion {
   v1_19_R3,
   v1_20_R1,
   v1_20_R2,
-  v1_20_R3;
+  v1_20_R3,
+  v1_20_R4;
 
-  private static final @NotNull CraftBukkitVersion CURRENT = valueOf(Bukkit.getServer().getClass().getName().split("\\.")[3]);
+  private static final @NotNull Logger logger = LoggerFactory.getLogger(CraftBukkitVersion.class);
+  private static final @NotNull CraftBukkitVersion CURRENT = createCurrent();
 
   public static @NotNull CraftBukkitVersion current() {
     return CURRENT;
@@ -31,5 +35,19 @@ public enum CraftBukkitVersion {
 
   public boolean isSupport() {
     return current().ordinal() >= ordinal();
+  }
+
+  private static @NotNull CraftBukkitVersion createCurrent() {
+    String version = Bukkit.getServer().getClass().getName().split("\\.")[3];
+    // paper 1.20.6 has a different package name, in this case version part is "CraftServer"
+    if (!"CraftServer".equals(version)) {
+      try {
+        return valueOf(version);
+      } catch (IllegalArgumentException e) {
+        logger.warn("Unknown CraftBukkit version: {}, use fallback ALL", version);
+        return ALL;
+      }
+    }
+    return v1_20_R4;
   }
 }
