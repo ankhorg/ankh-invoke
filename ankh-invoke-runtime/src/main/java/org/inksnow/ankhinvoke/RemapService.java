@@ -186,6 +186,7 @@ public final class RemapService extends Remapper {
   }
 
   public static class Builder {
+    private static final Remapper REGISTRY_REPLACEMENT_REMAPPER = new Remapper() {};
     private final AnkhInvoke.@NotNull Builder ankhInvokeBuilder;
     private final @NotNull List<@NotNull Remapper> remapperList = new ArrayList<>();
     private @Nullable String applyMapRegistry = null;
@@ -204,55 +205,73 @@ public final class RemapService extends Remapper {
       return this;
     }
 
+    public @NotNull Builder appendRegistry() {
+      remapperList.add(REGISTRY_REPLACEMENT_REMAPPER);
+      return this;
+    }
+
     public AnkhInvoke.@NotNull Builder build() {
       return ankhInvokeBuilder;
     }
 
     /* package-private */
     @NotNull RemapService buildInternal(@NotNull PredicateService predicateService) {
-      List<Remapper> remapperList = new ArrayList<>(this.remapperList);
-      if (applyMapRegistry != null) {
-        try {
-          String registryDirectory = AnkhInvoke.ANKH_INVOKE_PACKAGE.replace('.', '/') + "/" + applyMapRegistry + "/";
-          String registryFile = registryDirectory + "map-registry";
-          URL registryUrl = AnkhInvoke.class.getClassLoader().getResource(registryFile);
-          if (registryUrl == null) {
-            throw new FileNotFoundException("apply registry file " + registryFile + " not found in resource");
-          }
+      List<Remapper> remapperList = new ArrayList<>();
 
-          MappingRegistry registry;
-          try (DataInputStream in = new DataInputStream(new GZIPInputStream(new BufferedInputStream(registryUrl.openStream())))) {
-            registry = MappingRegistry.load(in);
-          }
-
-          for (MappingRegistry.MappingSet set : registry.sets()) {
-            boolean applied = false;
-            for (MappingRegistry.MappingEntry entry : set.entries()) {
-              if (predicateService.testPredicate(entry.predicates())) {
-                String mappingFile = registryDirectory + "mappings/" + entry.name();
-                URL mappingFileUrl = AnkhInvoke.class.getClassLoader().getResource(mappingFile);
-                if (mappingFileUrl == null) {
-                  throw new FileNotFoundException("apply mapping file " + mappingFile + " not found in resource");
-                }
-                BlobRemapper blobRemapper;
-                try (DataInputStream in = new DataInputStream(new GZIPInputStream(new BufferedInputStream(mappingFileUrl.openStream())))) {
-                  blobRemapper = BlobRemapper.load(in);
-                }
-                remapperList.add(blobRemapper);
-                applied = true;
-                break;
-              }
-            }
-            if (!applied && set.isRequired()) {
-              throw new IllegalStateException("required mapping registry " + set.name() + " no set applied");
-            }
-          }
-
-        } catch (IOException e) {
-          throw DstUnsafe.throwImpl(e);
+      for (Remapper remapper : this.remapperList) {
+        if (remapper == REGISTRY_REPLACEMENT_REMAPPER) {
+          buildMapRegistry(predicateService, remapperList);
+        } else {
+          remapperList.add(remapper);
         }
       }
+
       return new RemapService(Collections.unmodifiableList(remapperList));
+    }
+
+    private void buildMapRegistry(@NotNull PredicateService predicateService, @NotNull List<@NotNull Remapper> remapperList) {
+      if (applyMapRegistry == null) {
+        return;
+      }
+      try {
+        String registryDirectory = AnkhInvoke.ANKH_INVOKE_PACKAGE.replace('.', '/') + "/" + applyMapRegistry + "/";
+        String registryFile = registryDirectory + "map-registry";
+        URL registryUrl = AnkhInvoke.class.getClassLoader().getResource(registryFile);
+        if (registryUrl == null) {
+          throw new FileNotFoundException("apply registry file " + registryFile + " not found in resource");
+        }
+
+        MappingRegistry registry;
+        try (DataInputStream in = new DataInputStream(new GZIPInputStream(new BufferedInputStream(registryUrl.openStream())))) {
+          registry = MappingRegistry.load(in);
+        }
+
+        for (MappingRegistry.MappingSet set : registry.sets()) {
+          boolean applied = false;
+          for (MappingRegistry.MappingEntry entry : set.entries()) {
+            if (predicateService.testPredicate(entry.predicates())) {
+              String mappingFile = registryDirectory + "mappings/" + entry.name();
+              URL mappingFileUrl = AnkhInvoke.class.getClassLoader().getResource(mappingFile);
+              if (mappingFileUrl == null) {
+                throw new FileNotFoundException("apply mapping file " + mappingFile + " not found in resource");
+              }
+              BlobRemapper blobRemapper;
+              try (DataInputStream in = new DataInputStream(new GZIPInputStream(new BufferedInputStream(mappingFileUrl.openStream())))) {
+                blobRemapper = BlobRemapper.load(in);
+              }
+              remapperList.add(blobRemapper);
+              applied = true;
+              break;
+            }
+          }
+          if (!applied && set.isRequired()) {
+            throw new IllegalStateException("required mapping registry " + set.name() + " no set applied");
+          }
+        }
+
+      } catch (IOException e) {
+        throw DstUnsafe.throwImpl(e);
+      }
     }
   }
 }

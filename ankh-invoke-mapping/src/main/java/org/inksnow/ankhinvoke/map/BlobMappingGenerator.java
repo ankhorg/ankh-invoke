@@ -320,7 +320,7 @@ public final class BlobMappingGenerator {
       }
     }
 
-    if (!classBean.raw().endsWith(classBean.remapped()) || !classBean.fieldMap().isEmpty() || !classBean.methodMap().isEmpty()) {
+    if (!classBean.raw().equals(classBean.remapped()) || !classBean.fieldMap().isEmpty() || !classBean.methodMap().isEmpty()) {
       classBeanMap.put(mappedClassName, classBean);
     }
   }

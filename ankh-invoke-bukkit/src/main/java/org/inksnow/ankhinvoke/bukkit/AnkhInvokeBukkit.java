@@ -3,6 +3,7 @@ package org.inksnow.ankhinvoke.bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.inksnow.ankhinvoke.AnkhInvoke;
 import org.inksnow.ankhinvoke.bukkit.asm.NmsVersionRemapper;
+import org.inksnow.ankhinvoke.bukkit.paper.PaperEnvironment;
 import org.inksnow.ankhinvoke.classpool.ClassLoaderPoolLoader;
 import org.inksnow.ankhinvoke.classpool.LoadedClassPoolLoader;
 import org.inksnow.ankhinvoke.classpool.ResourcePoolLoader;
@@ -16,7 +17,7 @@ public class AnkhInvokeBukkit {
 
   public static AnkhInvoke.@NotNull Builder forBukkit(@NotNull Class<? extends JavaPlugin> pluginClass) {
     ClassLoader pluginClassLoader = pluginClass.getClassLoader();
-    return AnkhInvoke.builder()
+    AnkhInvoke.Builder builder = AnkhInvoke.builder()
         .reference()
         /**/.appendSource(new ResourceReferenceSource(pluginClassLoader))
         /**/.build()
@@ -31,6 +32,14 @@ public class AnkhInvokeBukkit {
         /**/.build()
         .referenceRemap()
         /**/.append(new NmsVersionRemapper())
+        /**/.appendRegistry()
         /**/.build();
+
+    if (PaperEnvironment.hasPaperMapping()) {
+      builder.referenceRemap()
+          .append(PaperEnvironment.createRemapper());
+    }
+
+    return builder;
   }
 }

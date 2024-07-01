@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.inksnow</groupId>
     <artifactId>ankh-invoke-parent</artifactId>
-    <version>1.0.10-SNAPSHOT</version>
+    <version>1.0.11-SNAPSHOT</version>
   </parent>
 
   <artifactId>ankh-invoke-runtime</artifactId>
@@ -57,17 +57,17 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.6</version>
+      <version>9.7</version>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>9.6</version>
+      <version>9.7</version>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-tree</artifactId>
-      <version>9.6</version>
+      <version>9.7</version>
     </dependency>
     <!-- auto jvm hacker -->
     <dependency>
