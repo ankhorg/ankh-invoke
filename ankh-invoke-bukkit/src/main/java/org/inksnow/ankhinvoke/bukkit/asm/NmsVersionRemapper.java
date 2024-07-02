@@ -1,6 +1,5 @@
 package org.inksnow.ankhinvoke.bukkit.asm;
 
-import org.inksnow.ankhinvoke.bukkit.paper.PaperEnvironment;
 import org.inksnow.ankhinvoke.bukkit.util.CraftBukkitVersion;
 import org.inksnow.ankhinvoke.comments.InternalName;
 import org.jetbrains.annotations.NotNull;
@@ -18,12 +17,6 @@ public class NmsVersionRemapper extends Remapper {
       return name;
     }
     int splitIndex = name.indexOf('/', matchedPrefix.length());
-    if (splitIndex == -1) {
-      return name;
-    } else if (PaperEnvironment.hasPaperMapping()) {
-      return matchedPrefix + name.substring(splitIndex + 1);
-    } else {
-      return matchedPrefix + CraftBukkitVersion.current() + name.substring(splitIndex);
-    }
+    return matchedPrefix + CraftBukkitVersion.current() + name.substring(splitIndex);
   }
 }
