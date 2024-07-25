@@ -1,32 +1,33 @@
 package org.inksnow.ankhinvoke.bukkit.paper;
 
-import io.papermc.paper.util.MappingEnvironment;
-import io.papermc.paper.util.ObfHelper;
 import org.objectweb.asm.commons.Remapper;
 
 public final class PaperObfHelperMapper extends Remapper {
-  private final ObfHelper obfHelper = ObfHelper.INSTANCE;
+  private final boolean reobf = R$MappingEnvironment.reobf();
+  private final Object obfHelper = R$ObfHelper.INSTANCE();
 
   @Override
   public String map(String internalName) {
-    if (MappingEnvironment.reobf()) {
+    if (reobf) {
       return internalName;
     }
-    return obfHelper.deobfClassName(
+    return R$ObfHelper.deobfClassName(
+        obfHelper,
         internalName.replace('/', '.')
     ).replace('.', '/');
   }
 
   @Override
   public String mapMethodName(String owner, String name, String descriptor) {
-    if (MappingEnvironment.reobf()) {
+    if (reobf) {
       return name;
     }
-    ObfHelper.ClassMapping mapping = obfHelper.mappingsByObfName().get(owner.replace('/', '.'));
+    Object mapping = R$ObfHelper.mappingsByObfName(obfHelper)
+        .get(owner.replace('/', '.'));
     if (mapping == null) {
       return name;
     }
-    String deobfName = mapping.methodsByObf().get(name + descriptor);
+    String deobfName = R$ObfHelper.R$ClassMapping.methodsByObf(mapping).get(name + descriptor);
     if (deobfName == null) {
       return name;
     }
@@ -35,14 +36,14 @@ public final class PaperObfHelperMapper extends Remapper {
 
   @Override
   public String mapFieldName(String owner, String name, String descriptor) {
-    if (MappingEnvironment.reobf()) {
+    if (reobf) {
       return name;
     }
-    ObfHelper.ClassMapping mapping = obfHelper.mappingsByObfName().get(owner.replace('/', '.'));
+    Object mapping = R$ObfHelper.mappingsByObfName(obfHelper).get(owner.replace('/', '.'));
     if (mapping == null) {
       return name;
     }
-    String deobfName = mapping.fieldsByObf().get(name);
+    String deobfName = R$ObfHelper.R$ClassMapping.fieldsByObf(mapping).get(name);
     if (deobfName == null) {
       return name;
     }
