@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.inksnow"
-version = "1.0.13-SNAPSHOT"
+version = "1.0.14-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -27,7 +27,7 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("org.inksnow:ankh-invoke-mapping:1.0.13-SNAPSHOT")
+    implementation("org.inksnow:ankh-invoke-mapping:1.0.14-SNAPSHOT")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
