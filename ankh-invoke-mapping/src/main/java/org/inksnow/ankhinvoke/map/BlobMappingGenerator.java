@@ -16,12 +16,14 @@ import org.inksnow.ankhinvoke.codec.util.NoCloseInputStream;
 import org.inksnow.ankhinvoke.map.bean.ClassBean;
 import org.inksnow.ankhinvoke.map.bean.FieldBean;
 import org.inksnow.ankhinvoke.map.bean.MethodBean;
+import org.inksnow.ankhinvoke.map.map.ProguardMap;
 import org.inksnow.ankhinvoke.map.util.AiStringUtils;
 import org.inksnow.ankhinvoke.map.util.LineBufferPrintStream;
 import org.inksnow.ankhinvoke.map.util.SafeIoUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -53,8 +55,8 @@ public final class BlobMappingGenerator {
   private final @NotNull JointProvider inheritanceProviders;
   private final @NotNull JarMapping spigotJarMapping;
   private final @NotNull JarMapping mojangJarMapping;
-  private final @NotNull JarRemapper spigotRemapper;
-  private final @NotNull JarRemapper mojangRemapper;
+  private final @NotNull Remapper spigotRemapper;
+  private final @NotNull Remapper mojangRemapper;
   private final @NotNull Map<@NotNull String, @NotNull ClassBean> classBeanMap;
 
   private BlobMappingGenerator(@NotNull Consumer<String> logFunction, @NotNull File cacheDirectory, boolean disableCache, @NotNull File targetFile, @NotNull String minecraftVersion, @NotNull String buildDataHash, boolean useSpigotMapping) {
@@ -71,21 +73,29 @@ public final class BlobMappingGenerator {
     this.spigotJarMapping.setFallbackInheritanceProvider(this.inheritanceProviders);
     this.mojangJarMapping = new JarMapping();
     this.mojangJarMapping.setFallbackInheritanceProvider(this.inheritanceProviders);
-    this.spigotRemapper = new JarRemapper(spigotJarMapping);
+    this.spigotRemapper = new FixInnerClassRemapper(new JarRemapper(spigotJarMapping));
     this.mojangRemapper = new JarRemapper(mojangJarMapping);
     this.classBeanMap = new HashMap<>();
   }
 
   public static void main(String[] args) throws IOException {
-    builder()
-        .setCacheDirectory(new File("/home/inkerbot/IdeaProjects/ankh-invoke-dev/ankh-invoke-nbt/target/maven-status/ankh-invoke-cache"))
-        .setTargetFile(new File("/home/inkerbot/IdeaProjects/ankh-invoke-dev/ankh-invoke-nbt/target/classes/org/inksnow/ankhinvoke/ankh-invoke-nbt/mappings/mojang-1.20.2"))
+    BlobMappingGenerator generator = builder()
+        .setCacheDirectory(new File("/home/inkerbot/IdeaProjects/ankh-invoke/ankh-invoke-nbt/target/maven-status/ankh-invoke-cache"))
+        .setTargetFile(new File("/home/inkerbot/IdeaProjects/ankh-invoke/ankh-invoke-nbt/target/classes/org/inksnow/ankhinvoke/ankh-invoke-nbt/mappings/mojang-1.20.2"))
         .setUseSpigotMapping(false)
         .setLogFunction(System.out::println)
         .setMinecraftVersion("1.20.2")
         .setBuildDataHash("172197ceb99364701937947ea7fc424ecf1bb694")
-        .build()
-        .run();
+        .build();
+    generator.run();
+
+    File dumpTxtFile = new File("/home/inkerbot/IdeaProjects/ankh-invoke/ankh-invoke-nbt/target/classes/org/inksnow/ankhinvoke/ankh-invoke-nbt/mappings/mojang-1.20.2.txt");
+    ProguardMap.load(generator.createBlobMap());
+    ProguardMap proguardMap = ProguardMap.load(generator.createBlobMap());
+    Files.createParentDirs(dumpTxtFile);
+    try (Writer writer = Files.newWriter(dumpTxtFile, StandardCharsets.UTF_8)) {
+      proguardMap.save(writer);
+    }
   }
 
   private void saveBlobMap(File cacheTmpFile, File cacheFile) throws IOException {
@@ -276,7 +286,7 @@ public final class BlobMappingGenerator {
     new ClassReader(in)
         .accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
-    JarRemapper remapper = useSpigotMapping ? spigotRemapper : mojangRemapper;
+    Remapper remapper = useSpigotMapping ? spigotRemapper : mojangRemapper;
     String mappedClassName;
     String spigotClassName;
     if (classNode.nestHostClass != null && classNode.name.startsWith(classNode.nestHostClass + "$")) {

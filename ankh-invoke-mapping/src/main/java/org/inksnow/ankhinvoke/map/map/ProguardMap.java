@@ -1,6 +1,8 @@
 package org.inksnow.ankhinvoke.map.map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.inksnow.ankhinvoke.codec.BlobMap;
+import org.inksnow.ankhinvoke.codec.util.ReferenceParser;
 import org.inksnow.ankhinvoke.map.bean.ClassBean;
 import org.inksnow.ankhinvoke.map.bean.FieldBean;
 import org.inksnow.ankhinvoke.map.bean.MethodBean;
@@ -58,6 +60,32 @@ public class ProguardMap {
     }
     return new ProguardMap(classNodeMap);
   }
+
+  public static ProguardMap load(BlobMap blobMap) {
+      Map<String, ClassBean> classNodeMap = new LinkedHashMap<>();
+    for (Map.Entry<String, String> classEntry : blobMap.classMap().entrySet()) {
+      ClassBean classNode = new ClassBean(classEntry.getKey(), classEntry.getValue());
+      classNodeMap.put(classEntry.getKey(), classNode);
+    }
+    for (Map.Entry<String, String> fieldEntry : blobMap.fieldMap().entrySet()) {
+      String[] fieldEntryParts = ReferenceParser.parseField(fieldEntry.getKey());
+
+      ClassBean classNode = classNodeMap.get(fieldEntryParts[0]);
+      classNode.fieldMap().put(new FieldBean(
+          fieldEntryParts[0], fieldEntryParts[1], fieldEntryParts[2]
+      ), fieldEntry.getValue());
+    }
+    for (Map.Entry<String, String> methodEntry : blobMap.methodMap().entrySet()) {
+      String[] methodEntryParts = ReferenceParser.parseMethod(methodEntry.getKey());
+
+      ClassBean classNode = classNodeMap.get(methodEntryParts[0]);
+      classNode.methodMap().put(new MethodBean(
+          methodEntryParts[0],
+          methodEntryParts[1],
+          methodEntryParts[2]
+      ), methodEntry.getValue());
+    }
+    return new ProguardMap(classNodeMap); }
 
   private static Type proguardToType(String proguardName) {
     if (proguardName.endsWith("[]")) {
