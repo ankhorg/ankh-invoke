@@ -73,7 +73,7 @@ public final class BlobMappingGenerator {
     this.spigotJarMapping.setFallbackInheritanceProvider(this.inheritanceProviders);
     this.mojangJarMapping = new JarMapping();
     this.mojangJarMapping.setFallbackInheritanceProvider(this.inheritanceProviders);
-    this.spigotRemapper = new FixInnerClassRemapper(new JarRemapper(spigotJarMapping));
+    this.spigotRemapper = new ChainRemapper(new JarRemapper(spigotJarMapping), new JarRemapper(mojangJarMapping));
     this.mojangRemapper = new JarRemapper(mojangJarMapping);
     this.classBeanMap = new HashMap<>();
   }
@@ -136,10 +136,6 @@ public final class BlobMappingGenerator {
     String mappingsUrl = buildDataInfo.get("mappingsUrl").getAsString();
 
     inheritanceProviders.add(new JarProvider(Jar.init(getFile(null, serverUrl))));
-
-    try (BufferedReader reader = getReader(null, mappingsUrl)) {
-      spigotJarMapping.loadMappings(reader, null, null, false);
-    }
 
     try (BufferedReader reader = getReader(null, mappingsUrl)) {
       mojangJarMapping.loadMappings(reader, null, null, false);
