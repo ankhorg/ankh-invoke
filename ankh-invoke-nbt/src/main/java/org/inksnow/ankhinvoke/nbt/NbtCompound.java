@@ -531,7 +531,7 @@ public class NbtCompound extends Nbt<RefNbtTagCompound> implements NbtComponentL
   public long[] getDeepLongArray(@NotNull String key, long[] def) {
     RefNbtBase value = getDeepRefNbt(key);
     return value instanceof RefNbtTagLongArray
-        ? ((RefNbtTagLongArray) value).getLongs()
+        ? (LONG_ARRAY_SUPPORT ? ((RefNbtTagLongArray) value).getLongs() : ((RefNbtTagLongArray) value).longs)
         : def;
   }
 
