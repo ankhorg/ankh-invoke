@@ -38,7 +38,7 @@ jobs:
         run: mvn -B deploy -s settings.xml
         env:
           REPOSITORY_ID: irepo
-          REPOSITORY_URL: https://s0.blobs.inksnow.org/maven/
+          REPOSITORY_URL: https://s0.blobs.irepo.space/maven/
           REPOSITORY_USERNAME: ${{secrets.IREPO_USERNAME}}
           REPOSITORY_PASSWORD: ${{secrets.IREPO_PASSWORD}}
 
@@ -47,6 +47,6 @@ jobs:
         working-directory: ankh-invoke-gradle-plugin
         env:
           REPOSITORY_ID: irepo
-          REPOSITORY_URL: https://s0.blobs.inksnow.org/maven/
+          REPOSITORY_URL: https://s0.blobs.irepo.space/maven/
           REPOSITORY_USERNAME: ${{secrets.IREPO_USERNAME}}
           REPOSITORY_PASSWORD: ${{secrets.IREPO_PASSWORD}}
